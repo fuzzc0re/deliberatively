@@ -1,0 +1,2 @@
+(this.webpackJsonpdeliberatively=this.webpackJsonpdeliberatively||[]).push([[7],{593:function(e,t,i){"use strict";i.r(t);var r=i(4);t.default=function(){return Object(r.jsx)("div",{children:"Invalid vote market address"})}}}]);
+//# sourceMappingURL=7.551f6e25.chunk.js.map

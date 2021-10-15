@@ -1,0 +1,1 @@
+{"version":3,"sources":["routes/PageNotFound.tsx"],"names":["PageNotFound"],"mappings":"oIAIeA,UAFU,kBAAM","file":"static/js/8.ed5bf17a.chunk.js","sourcesContent":["import { FC } from \"react\";\n\nconst PageNotFound: FC = () => <div>Page not found</div>;\n\nexport default PageNotFound;\n"],"sourceRoot":""}

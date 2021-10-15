@@ -1,0 +1,1 @@
+{"version":3,"sources":["routes/InvalidVoteMarketAddress.tsx"],"names":["InvalidVoteMarketAddress"],"mappings":"oIAIeA,UAFsB,kBAAM","file":"static/js/7.551f6e25.chunk.js","sourcesContent":["import { FC } from \"react\";\n\nconst InvalidVoteMarketAddress: FC = () => <div>Invalid vote market address</div>;\n\nexport default InvalidVoteMarketAddress;\n"],"sourceRoot":""}

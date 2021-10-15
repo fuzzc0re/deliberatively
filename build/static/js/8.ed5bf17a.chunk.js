@@ -1,0 +1,2 @@
+(this.webpackJsonpdeliberatively=this.webpackJsonpdeliberatively||[]).push([[8],{595:function(e,t,i){"use strict";i.r(t);var n=i(4);t.default=function(){return Object(n.jsx)("div",{children:"Page not found"})}}}]);
+//# sourceMappingURL=8.ed5bf17a.chunk.js.map
