@@ -10,7 +10,7 @@ import {
   getSolongWallet,
   // getTorusWallet,
 } from "@solana/wallet-adapter-wallets";
-// import { clusterApiUrl } from "@solana/web3.js";
+import { clusterApiUrl } from "@solana/web3.js";
 
 import { App } from "./App";
 
@@ -35,8 +35,8 @@ export const AppContainer: FC = () => {
     [network]
   );
 
-  // const solanaEndpoint = useMemo(() => clusterApiUrl(network), [network]);
-  const solanaEndpoint = "http://localhost:8899";
+  const solanaEndpoint = useMemo(() => clusterApiUrl(network), [network]);
+  // const solanaEndpoint = "http://localhost:8899";
 
   return (
     <ConnectionProvider endpoint={solanaEndpoint}>
