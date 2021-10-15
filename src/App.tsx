@@ -1,26 +1,35 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { FC, useState, KeyboardEvent, MouseEvent } from "react";
+import { BrowserRouter } from "react-router-dom";
 
-function App() {
+import { VoteMarketContextProvider } from "./context/VoteMarket";
+
+import { AppToolbar } from "./components/AppToolbar";
+import { AppDrawer } from "./components/AppDrawer";
+import { Copyright } from "./components/Copyright";
+import { Container } from "./components/Container";
+
+import { Routes } from "./Routes";
+
+export const App: FC = () => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const handleDrawerToggle = (e: KeyboardEvent | MouseEvent) => {
+    if (e.type === "keydown" && ((e as KeyboardEvent).key === "Tab" || (e as KeyboardEvent).key === "Shift")) {
+      return;
+    }
+
+    setDrawerOpen(!drawerOpen);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <VoteMarketContextProvider>
+        <AppToolbar handleDrawerToggle={handleDrawerToggle} />
+        <AppDrawer drawerOpen={drawerOpen} handleDrawerToggle={handleDrawerToggle} />
+        <Container>
+          <Routes />
+        </Container>
+        <Copyright />
+      </VoteMarketContextProvider>
+    </BrowserRouter>
   );
-}
-
-export default App;
+};
