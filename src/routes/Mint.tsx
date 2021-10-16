@@ -1,10 +1,12 @@
 import { FC } from "react";
-import { Grid } from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
 import { TextFieldParticipants } from "../components/textfields/Participants";
 import { TextFieldNumberOfDays } from "../components/textfields/NumberOfDays";
 import { TextFieldMaximumNumberOfRepresentatives } from "../components/textfields/MaximumNumberOfRepresentatives";
+
+import { AirdropButton } from "../components/buttons/Airdrop";
 
 import { MintTokenButton } from "../components/buttons/Mint";
 
@@ -36,6 +38,13 @@ const Mint: FC = () => {
         direction={{ xs: "column", sm: "row" }}
       >
         <StyledGrid item xs={1} sm={4} md={8}>
+          <Typography>
+            For now the contract runs on Solana Devnet so make sure to configure your wallet accordingly.
+          </Typography>
+          <Typography>An airdrop button for 1 SOL on devnet has been provided to test the website.</Typography>
+        </StyledGrid>
+
+        <StyledGrid item xs={1} sm={4} md={8}>
           <TextFieldParticipants />
         </StyledGrid>
 
@@ -49,6 +58,7 @@ const Mint: FC = () => {
 
         <StyledBottomGrid item xs={1} sm={4} md={8}>
           <MintTokenButton />
+          <AirdropButton />
         </StyledBottomGrid>
       </StyledGrid>
     </InitVoteMarketContextProvider>
