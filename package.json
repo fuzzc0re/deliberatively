@@ -11,15 +11,26 @@
     "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
-    "extends": ["react-app", "react-app/jest"]
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "homepage": "https://deliberatively.org",
   "dependencies": {
-    "@emotion/react": "^11.4.1",
+    "@emotion/react": "^11.5.0",
     "@emotion/styled": "^11.3.0",
     "@mui/icons-material": "^5.0.4",
     "@mui/material": "^5.0.4",
@@ -29,11 +40,11 @@
     "@solana/wallet-adapter-base": "^0.6.0",
     "@solana/wallet-adapter-react": "^0.12.5",
     "@solana/wallet-adapter-react-ui": "^0.5.1",
-    "@solana/wallet-adapter-wallets": "^0.10.1",
+    "@solana/wallet-adapter-wallets": "^0.10.2",
     "@solana/web3.js": "^1.26.0",
     "bn.js": "^5.2.0",
     "borsh": "^0.6.0",
-    "idb": "^6.1.3",
+    "idb": "^6.1.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router-dom": "^5.3.0",
@@ -45,7 +56,7 @@
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.4.1",
     "@types/jest": "^27.0.2",
-    "@types/node": "^16.11.0",
+    "@types/node": "^16.11.1",
     "@types/react": "^17.0.30",
     "@types/react-dom": "^17.0.9",
     "@types/react-router-dom": "^5.1.9",

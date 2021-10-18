@@ -36,6 +36,27 @@ export const fundsRequired = async (connection: Connection, publicKey: PublicKey
   }
 };
 
+export const getContractPDA = async (mintAccountPublicKey: PublicKey): Promise<PublicKey> => {
+  const deliberativelyMintDerivedAccountPubkey = await PublicKey.createWithSeed(
+    mintAccountPublicKey,
+    "deliberatively",
+    DELIBERATIVELY_PROGRAM_ID
+  );
+
+  return deliberativelyMintDerivedAccountPubkey;
+};
+
+export const getAccountPDA = async (mintAccountPublicKey: PublicKey, ownPublicKey: PublicKey): Promise<PublicKey> => {
+  const mintAccountPublicKeyString = mintAccountPublicKey.toString();
+  const initializerMintDerivedAccountPubkey = await PublicKey.createWithSeed(
+    ownPublicKey,
+    "deliberatively" + mintAccountPublicKeyString.slice(mintAccountPublicKeyString.length - 8),
+    DELIBERATIVELY_PROGRAM_ID
+  );
+
+  return initializerMintDerivedAccountPubkey;
+};
+
 interface IMintVoteMarketTransactions {
   transaction: Transaction;
   deliberativelyMintDerivedAccountPubkey: PublicKey;
@@ -100,11 +121,7 @@ export const initVoteMarketMintTransactions = async (
 
     // Create account with seed for DELIBERATIVELY_PROGRAM_ID
     // Deliberatively will use this to write vote market data
-    const deliberativelyMintDerivedAccountPubkey = await PublicKey.createWithSeed(
-      mintAccount.publicKey,
-      "deliberatively",
-      DELIBERATIVELY_PROGRAM_ID
-    );
+    const deliberativelyMintDerivedAccountPubkey = await getContractPDA(mintAccount.publicKey);
     transaction.add(
       SystemProgram.createAccountWithSeed({
         fromPubkey: publicKey,
@@ -119,12 +136,8 @@ export const initVoteMarketMintTransactions = async (
 
     // Create account with seed for initializer
     // Deliberatively will use this to write vote market participant data
+    const initializerMintDerivedAccountPubkey = await getAccountPDA(mintAccount.publicKey, publicKey);
     const mintAccountPublicKeyString = mintAccount.publicKey.toString();
-    const initializerMintDerivedAccountPubkey = await PublicKey.createWithSeed(
-      publicKey,
-      "deliberatively" + mintAccountPublicKeyString.slice(mintAccountPublicKeyString.length - 8),
-      DELIBERATIVELY_PROGRAM_ID
-    );
     transaction.add(
       SystemProgram.createAccountWithSeed({
         fromPubkey: publicKey,

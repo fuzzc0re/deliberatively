@@ -54,7 +54,7 @@ export const InitVoteMarketContext = createContext<IInitVoteMarketContext>(initV
 
 export const InitVoteMarketContextProvider: FC = ({ children }) => {
   // const [identifierText, setIdentifierText] = useState("Some identifier text");
-  const [numberOfParticipants, setNumberOfParticipants] = useState(5);
+  const [numberOfParticipants, setNumberOfParticipants] = useState(10);
   // const [rebalancingCost, setRebalancingCost] = useState(0.01);
   const [maximumNumberOfRepresentatives, setMaximumNumberOfRepresentatives] = useState(2);
   const [numberOfDays, setNumberOfDays] = useState(1);

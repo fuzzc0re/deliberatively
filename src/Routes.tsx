@@ -7,7 +7,8 @@ const Home = lazy(() => import("./routes/Home"));
 const Mint = lazy(() => import("./routes/Mint"));
 const InvalidVoteMarketAddress = lazy(() => import("./routes/InvalidVoteMarketAddress"));
 const VoteMarket = lazy(() => import("./routes/VoteMarket"));
-// const Participate = lazy(() => import("./routes/Participate"));
+const ProposeAlternative = lazy(() => import("./routes/ProposeAlternative"));
+const Participate = lazy(() => import("./routes/Participate"));
 // const Contribute = lazy(() => import("./routes/Contribute"));
 const PageNotFound = lazy(() => import("./routes/PageNotFound"));
 
@@ -21,9 +22,10 @@ const RoutesSwitch: FC = () => {
         {/*<Router history={history}>*/}
         <Route exact path="/" component={Home} />
         <Route exact path="/mint" component={Mint} />
+        <Route exact path="/market/:voteMarketAddress/participate" component={Participate} />
+        <Route exact path="/market/:voteMarketAddress/propose" component={ProposeAlternative} />
         <Route exact path="/market/:voteMarketAddress" component={VoteMarket} />
-        {/*<Route exact path="/participate/:voteMarketAddress" component={Participate} />
-           <Route exact path="/contribute/:voteMarketAddress" component={Contribute} />*/}
+        {/*<Route exact path="/contribute/:voteMarketAddress" component={Contribute} />*/}
         <Route exact path="/invalid-vote-market-address" component={InvalidVoteMarketAddress} />
         <Route component={PageNotFound} />
         {/*</Router>*/}

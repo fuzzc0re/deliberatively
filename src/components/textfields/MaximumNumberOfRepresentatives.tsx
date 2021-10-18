@@ -21,9 +21,9 @@ export const TextFieldMaximumNumberOfRepresentatives: FC = () => {
       number = Number(input);
       if (number < 2) {
         number = 2;
-      } else if (number > numberOfParticipants) {
+      } else if (number > numberOfParticipants / 5) {
         setHasError(true);
-        number = Math.round(numberOfParticipants / 5);
+        // number = Math.round(numberOfParticipants / 5);
       }
       setNoOfRepresentatives(number);
       setMaximumNumberOfRepresentatives(number);
@@ -33,6 +33,8 @@ export const TextFieldMaximumNumberOfRepresentatives: FC = () => {
   return (
     <StyledTextField
       variant="outlined"
+      focused
+      color="secondary"
       id="no_of_representatives_textfield"
       type="number"
       inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
@@ -44,9 +46,9 @@ export const TextFieldMaximumNumberOfRepresentatives: FC = () => {
       helperText={
         hasError
           ? "Representatives can be at most a 5th of participants."
-          : "Representatives need to have at least power > 1"
+          : "Representatives need to have at least more than 1 tokens"
       }
-      InputProps={{ inputProps: { min: 2, max: Math.round(numberOfParticipants / 5) } }}
+      InputProps={{ inputProps: { min: 2 } }}
       value={noOfRepresentatives}
       onChange={handleNoOfRepresentativesChange}
     />

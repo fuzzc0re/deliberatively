@@ -16,9 +16,13 @@ import { InitVoteMarketContextProvider } from "../context/InitVoteMarket";
 
 const StyledGrid = styled(Grid)(({ theme }) => ({
   padding: theme.spacing(2),
-  marginTop: theme.spacing(2),
-  marginLeft: theme.spacing(3),
   backgroundColor: theme.palette.background.paper,
+}));
+
+const StyledGridItem = styled(Grid)(({ theme }) => ({
+  padding: theme.spacing(1),
+  textAlign: "center",
+  justifyContent: "space-evenly",
 }));
 
 const StyledBottomGrid = styled(Grid)(({ theme }) => ({
@@ -32,31 +36,35 @@ const Mint: FC = () => {
     <InitVoteMarketContextProvider>
       <StyledGrid
         container
-        rowSpacing={{ xs: 2, sm: 3, md: 4 }}
-        columnSpacing={{ xs: 2, sm: 3, md: 4 }}
-        columns={{ xs: 1, sm: 4, md: 8 }}
+        rowSpacing={{ xs: 2, sm: 3, md: 3 }}
+        columnSpacing={{ sm: 1, md: 1 }}
+        columns={{ xs: 1, sm: 12, md: 12 }}
         direction={{ xs: "column", sm: "row" }}
       >
-        <StyledGrid item xs={1} sm={4} md={8}>
+        <StyledGrid item xs={1} sm={12} md={12}>
           <Typography>
-            For now the contract runs on Solana Devnet so make sure to configure your wallet accordingly.
+            For now the associated contract runs on Solana Devnet so make sure to configure your wallet accordingly.
           </Typography>
-          <Typography>An airdrop button for 1 SOL on devnet has been provided to test the website.</Typography>
+          <Typography>
+            An airdrop button for 1 SOL on the devnet has been provided for you to test the website.
+          </Typography>
         </StyledGrid>
 
-        <StyledGrid item xs={1} sm={4} md={8}>
-          <TextFieldParticipants />
+        <StyledGrid container columnSpacing={{ sm: 1, md: 1 }}>
+          <StyledGridItem item xs={1} sm={3} md={3}>
+            <TextFieldParticipants />
+          </StyledGridItem>
+
+          <StyledGridItem item xs={1} sm={3} md={3}>
+            <TextFieldNumberOfDays />
+          </StyledGridItem>
+
+          <StyledGridItem item xs={1} sm={3} md={3}>
+            <TextFieldMaximumNumberOfRepresentatives />
+          </StyledGridItem>
         </StyledGrid>
 
-        <StyledGrid item xs={1} sm={4} md={8}>
-          <TextFieldNumberOfDays />
-        </StyledGrid>
-
-        <StyledGrid item xs={1} sm={4} md={8}>
-          <TextFieldMaximumNumberOfRepresentatives />
-        </StyledGrid>
-
-        <StyledBottomGrid item xs={1} sm={4} md={8}>
+        <StyledBottomGrid item xs={1} sm={12} md={12}>
           <MintTokenButton />
           <AirdropButton />
         </StyledBottomGrid>

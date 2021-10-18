@@ -1,7 +1,10 @@
-import { FC, createContext, useEffect, useMemo, useCallback } from "react";
-import { useConnection } from "@solana/wallet-adapter-react";
+import { FC, createContext, useState, useEffect, useMemo, useCallback } from "react";
+import { PublicKey } from "@solana/web3.js";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useHistory, useLocation } from "react-router-dom";
 import useLocalStorageState from "use-local-storage-state";
+
+import { getAccountPDA } from "../contract/utils";
 
 import { IVoteMarket, getAllVoteMarkets, deleteVoteMarket, getOrSetVoteMarket } from "../models/VoteMarket";
 import { IVoteParticipant, getAllVoteParticipants } from "../models/VoteParticipant";
@@ -13,6 +16,7 @@ import { sha256 } from "../utils/db";
 interface IVoteMarketContext {
   currentVoteMarket?: IVoteMarket;
   lastSelectedVoteMarketHash: string;
+  isVoteParticipant: boolean;
   setLastSelectedVoteMarketHash: (hash: string) => void;
   getAllVerifiedVoteMarkets: () => Promise<IVoteMarket[]>;
   getAssociatedVoteParticipants: (voteMarketAddress: string) => Promise<IVoteParticipant[]>;
@@ -23,6 +27,7 @@ interface IVoteMarketContext {
 const voteMarketContextDefaults: IVoteMarketContext = {
   currentVoteMarket: undefined,
   lastSelectedVoteMarketHash: "",
+  isVoteParticipant: false,
   setLastSelectedVoteMarketHash: (hash: string) => {
     console.log(hash);
     return;
@@ -51,6 +56,8 @@ export const VoteMarketContext = createContext<IVoteMarketContext>(voteMarketCon
 
 export const VoteMarketContextProvider: FC = ({ children }) => {
   const { connection } = useConnection();
+  const { publicKey, connected, disconnecting } = useWallet();
+  const [isVoteParticipant, setIsVoteParticipant] = useState(false);
   const [currentVoteMarket, setCurrentVoteMarket] = useLocalStorageState(
     "currentVoteMarket",
     voteMarketContextDefaults.currentVoteMarket
@@ -68,6 +75,31 @@ export const VoteMarketContextProvider: FC = ({ children }) => {
     [location.pathname]
   );
 
+  const checkIsVoteParticipant = useCallback(async () => {
+    if (currentVoteMarket && currentVoteMarket.address && publicKey) {
+      try {
+        const mintAccountPublicKey = new PublicKey(currentVoteMarket.address);
+        const ownTokenAccountPDA = await getAccountPDA(mintAccountPublicKey, publicKey);
+        const account = await connection.getParsedAccountInfo(ownTokenAccountPDA);
+
+        if (!account) return;
+        if (!account.value) return;
+        if (!account.value.data) return;
+        const accountValueData = account.value.data.valueOf() as Uint8Array;
+        const check1 = accountValueData[63] !== 0;
+        const check2 = accountValueData[64] !== 0;
+        const check3 = accountValueData[65] === 0;
+        const check4 = accountValueData[66] === 0;
+        // Vote market state is for publicKey pda is written so the holder is a participant
+        if (check1 && check2 && check3 && check4) {
+          setIsVoteParticipant(true);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }, [location.pathname, publicKey]);
+
   const checkVoteMarketAddress = useCallback(async () => {
     if (!voteMarketAddress || voteMarketAddress === "") return;
     // TODO Check first if valid address then if in db then solana
@@ -83,14 +115,22 @@ export const VoteMarketContextProvider: FC = ({ children }) => {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (
-      voteMarketAddress &&
-      voteMarketAddress !== "" &&
-      basename === "market" // || basename === "participate" || basename === "contribute")
-    ) {
+    if (voteMarketAddress && voteMarketAddress !== "" && basename === "market") {
       checkVoteMarketAddress();
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (currentVoteMarket && publicKey && connected) {
+      checkIsVoteParticipant();
+    }
+  }, [currentVoteMarket, publicKey, connected]);
+
+  useEffect(() => {
+    if (disconnecting) {
+      setIsVoteParticipant(false);
+    }
+  }, [location.pathname, disconnecting]);
 
   // receives address and not hash since consumed by client
   const handleSetLastSelectedVoteMarketHash = useCallback(
@@ -106,6 +146,7 @@ export const VoteMarketContextProvider: FC = ({ children }) => {
       value={{
         currentVoteMarket,
         lastSelectedVoteMarketHash,
+        isVoteParticipant,
         setLastSelectedVoteMarketHash: handleSetLastSelectedVoteMarketHash,
         getAllVerifiedVoteMarkets: getAllVoteMarkets,
         getAssociatedVoteParticipants: getAllVoteParticipants,

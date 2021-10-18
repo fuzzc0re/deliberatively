@@ -30,6 +30,8 @@ export const TextFieldNumberOfDays: FC = () => {
   return (
     <StyledTextField
       variant="outlined"
+      focused
+      color="secondary"
       id="no_of_days_textfield"
       type="number"
       inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}

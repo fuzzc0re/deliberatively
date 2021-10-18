@@ -8,7 +8,7 @@ const themeOptions: ThemeOptions = {
       dark: "#666666",
     },
     secondary: {
-      main: "#ad57da",
+      main: "#111111",
     },
     error: {
       main: "#af0c00",

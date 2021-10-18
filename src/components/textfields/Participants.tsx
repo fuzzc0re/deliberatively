@@ -6,17 +6,17 @@ import { useInitVoteMarketContext } from "../../hooks/useInitVoteMarketContext";
 
 export const TextFieldParticipants: FC = () => {
   const { setNumberOfParticipants } = useInitVoteMarketContext();
-  const [noOfParticipants, setNoOfParticipants] = useState(5);
+  const [noOfParticipants, setNoOfParticipants] = useState(10);
   const handleNoOfParticipantsChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e && e.target && e.target.value) {
       let number: number;
       const input = e.target.value.replace(/\D/g, "");
       if (input === "") {
-        number = 5;
+        number = 10;
       }
       number = Number(input);
-      if (number < 5) {
-        number = 5;
+      if (number < 10) {
+        number = 10;
       } else if (number <= 10000000000) {
         number = Math.round(number);
       } else {
@@ -30,6 +30,8 @@ export const TextFieldParticipants: FC = () => {
   return (
     <StyledTextField
       variant="outlined"
+      focused
+      color="secondary"
       id="no_of_participants_textfield"
       type="number"
       inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
@@ -38,7 +40,7 @@ export const TextFieldParticipants: FC = () => {
         shrink: true,
       }}
       // size="small"
-      helperText="Equals to maximum issued tokens"
+      helperText="Equals to the maximum number of mintable tokens"
       InputProps={{ inputProps: { min: 5, max: 10000000000 } }}
       value={noOfParticipants}
       onChange={handleNoOfParticipantsChange}

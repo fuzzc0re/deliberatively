@@ -6,7 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 
 import { useVoteMarketContext } from "../hooks/useVoteMarketContext";
 
-import { ParticipateButton } from "../components/buttons/Participate";
+import { GoToProposeAlternativeButton } from "../components/buttons/GoToProposeAlternative";
 
 const StyledGrid = styled(Grid)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -19,24 +19,18 @@ const StyledGrid = styled(Grid)(({ theme }) => ({
 const StyledTypography = styled(Typography)(({ theme }) => ({
   padding: theme.spacing(1),
   letterSpacing: theme.spacing(0.07),
-  width: "100%",
 }));
 
-const Participate: FC = () => {
-  // const [isVoter, setIsVoter] = useState(false);
-  // const [balance, setBalance] = useState(0);
-
+const ProposeAlternative: FC = () => {
   const history = useHistory();
   const { currentVoteMarket, isVoteParticipant } = useVoteMarketContext();
   const { connected } = useWallet();
-  // const { connection } = useConnection();
-  // const history = useHistory();
-  //
+
   useEffect(() => {
-    if (connected && isVoteParticipant && currentVoteMarket) {
-      history.replace(`/market/${currentVoteMarket.address}`);
+    if (!connected || !isVoteParticipant) {
+      history.replace(`/market/${currentVoteMarket?.address}`);
     }
-  }, [currentVoteMarket, isVoteParticipant, connected]);
+  }, [currentVoteMarket, connected, isVoteParticipant]);
 
   return (
     <StyledGrid
@@ -47,14 +41,14 @@ const Participate: FC = () => {
       direction={{ xs: "column", sm: "row" }}
     >
       <StyledGrid item xs={1} sm={12} md={12}>
-        <StyledTypography paragraph>Participate in {currentVoteMarket?.address}</StyledTypography>
+        <StyledTypography paragraph>Vote market: {currentVoteMarket?.address}</StyledTypography>
       </StyledGrid>
 
       <StyledGrid item xs={1} sm={12} md={12}>
-        <ParticipateButton />
+        <GoToProposeAlternativeButton />
       </StyledGrid>
     </StyledGrid>
   );
 };
 
-export default Participate;
+export default ProposeAlternative;
