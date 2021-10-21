@@ -1,6 +1,8 @@
-import { FC, useMemo, useCallback } from "react";
+import { FC, useState, useMemo, useCallback } from "react";
 import { useHistory } from "react-router-dom";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { CircularProgress } from "@mui/material";
+import { styled } from "@mui/material/styles";
 
 import { initVoteMarket, InitVoteMarketArgs } from "../../contract/instructions/initVoteMarket";
 
@@ -10,6 +12,12 @@ import { sha256 } from "../../utils/db";
 import { useInitVoteMarketContext } from "../../hooks/useInitVoteMarketContext";
 
 import { StyledButton } from "../styled/Button";
+
+const StyledCircularProgress = styled(CircularProgress)(({ theme }) => ({
+  width: theme.spacing(0.05),
+  height: theme.spacing(0.05),
+  color: theme.palette.primary.contrastText,
+}));
 
 export const MintTokenButton: FC = () => {
   const {
@@ -24,6 +32,7 @@ export const MintTokenButton: FC = () => {
   } = useInitVoteMarketContext();
   const { connection } = useConnection();
   const { connected, wallet, publicKey, sendTransaction } = useWallet();
+  const [buttonDisabled, setButtonDisabled] = useState(false);
   const history = useHistory();
 
   const args: InitVoteMarketArgs = useMemo(
@@ -50,8 +59,10 @@ export const MintTokenButton: FC = () => {
   );
 
   const handleClick = useCallback(async () => {
+    setButtonDisabled(true);
     if (!connected || !wallet || !publicKey) {
       console.log("No wallet found");
+      setButtonDisabled(false);
       return;
     }
 
@@ -81,15 +92,17 @@ export const MintTokenButton: FC = () => {
         alternatives: [],
       };
       await setVoteMarket(newVoteMarket);
+      setButtonDisabled(false);
       history.push(`/market/${mintAccountPublicKey.toString()}`);
     } catch (error) {
+      setButtonDisabled(false);
       console.log(error);
     }
   }, [connected, wallet, publicKey]);
 
   return (
-    <StyledButton disableRipple onClick={handleClick}>
-      MINT
+    <StyledButton disabled={buttonDisabled} disableRipple onClick={handleClick}>
+      {buttonDisabled ? <StyledCircularProgress /> : "MINT"}
     </StyledButton>
   );
 };
