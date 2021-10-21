@@ -26,6 +26,20 @@ pub enum VoteError {
     InvalidProgramDerivedAddress,
     #[error("Program is not mint authority")]
     ProgramIsNotMintAuthority,
+    #[error("Vote identifier text is too large")]
+    LargeIdentifierText,
+    #[error("Vote keyword text is too large")]
+    LargeKeywordText,
+    #[error("Vote number of days is too large")]
+    LargeNumberOfDays,
+    #[error("Large participant presentation text")]
+    LargePresentationText,
+    #[error("Keyword mismatch")]
+    KeywordsDoNotMatch,
+    #[error("Cannot mint any more tokens")]
+    CannotMintMoreTokens,
+    #[error("Representative has already proposed an alternative")]
+    RepresentativeHasAlreadyProposedAlternative,
     #[error("Amount overflow")]
     AmountOverflow,
     #[error("Expected account mismatch")]

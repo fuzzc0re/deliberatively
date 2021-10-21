@@ -6,8 +6,11 @@ import { sha256 } from "./db";
 export const voteMarketAddressValidator = async (connection: Connection, address: string): Promise<boolean> => {
   if (address === "") {
     return false;
-  } else if (address.length > 46 || address.length < 44) {
-    console.log("Address too small or too large");
+  } else if (address.length > 46) {
+    console.log("Address too large: " + address.length);
+    return false;
+  } else if (address.length < 44) {
+    console.log("Address too small: " + address.length);
     return false;
   } else {
     try {

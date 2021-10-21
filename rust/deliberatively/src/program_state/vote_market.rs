@@ -1,33 +1,45 @@
-use crate::{errors::VoteError, program_state::Key, utils::try_from_slice_checked};
-use borsh::{BorshDeserialize, BorshSerialize};
+use crate::{
+    errors::VoteError, 
+    program_state::{
+        Key, VoteState, MAX_IDENTIFIER_TEXT_LEN, MAX_KEYWORD_LEN
+    }, 
+    utils::try_from_slice_checked
+};
+use borsh::{BorshSerialize, BorshDeserialize};
 use solana_program::{
     account_info::AccountInfo,
-    borsh::try_from_slice_unchecked,
     entrypoint::ProgramResult,
     program_error::ProgramError,
     // program_option::COption,
-    pubkey::Pubkey,
+    pubkey::{PUBKEY_BYTES, Pubkey},
+    sysvar::{Sysvar, clock::Clock}
 };
 
 pub const MAX_VOTE_MARKET_LEN: usize = 1 + // enum [key]
-    32 + // Pubkey [associated mint public key]
-    // 32 + // Pubkey [token holder account]
+    MAX_IDENTIFIER_TEXT_LEN + 
+    MAX_KEYWORD_LEN +
+    PUBKEY_BYTES + // 32
     4 + // u32 [number of participants]
-    1 + // u8 [rebalancing cost]
+    4 + // u32 [already minted voting power]
+    // 1 + // u8 [rebalancing cost]
     4 + // u32 [maximum number of representatives]
     8 + // i64 [start timestamp]
     8 + // i64 [end timestamp = start timestamp + number of days]
-    8; // u64 [minimum contribution required]
+    8 + // u64 [minimum contribution required]
+    // TODO find out why we need 8 bytes more
+    8;
 
 #[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
 pub struct VoteMarket {
     /// For deserialization in order to recognize the type of state to modify.
     pub key: Key,
+    /// Identifier text for the vote market
+    pub identifier_text: String,
+    /// Keyword that prospective participants need to provide
+    pub keyword: String,
     /// Associated mint public key
     pub mint_pubkey: Pubkey,
-    // /// Account holding all the participants' tokens
-    // pub token_holder_pubkey: Pubkey,
     /// Number of participants == Maximum minted tokens.
     /// When a new participant enters the market, they get 1 token.
     /// 1 token represents a unit of voting power.
@@ -53,33 +65,75 @@ pub struct VoteMarket {
     /// The transaction costs are covered by the contributions until they become 0.
     /// If contributions == 0 then the participants cover the transaction costs of their
     /// rebalancings.
-    pub minimum_contribution_required_from_participant: u32,
+    pub minimum_contribution_required_from_participant: u64,
+}
+
+impl VoteState for VoteMarket {
+    fn key(&self) -> Key {
+        self.key 
+    }
+
+    fn save(&self, account: &AccountInfo) -> ProgramResult {
+        self.serialize(&mut *account.data.borrow_mut())?;
+
+        Ok(())
+    }
 }
 
 impl VoteMarket {
     pub fn from_account_info(a: &AccountInfo) -> Result<VoteMarket, ProgramError> {
         let data: VoteMarket =
             try_from_slice_checked(&a.data.borrow_mut(), Key::VoteMarket, MAX_VOTE_MARKET_LEN)?;
-
         Ok(data)
     }
 
-    pub fn from_empty_account(a: &AccountInfo) -> Result<VoteMarket, ProgramError> {
-        let data: VoteMarket = try_from_slice_unchecked(&a.data.borrow_mut())?;
+    pub fn pad_identifier_text(&mut self) -> ProgramResult {
+        let mut array_of_spaces = vec![];
+        while array_of_spaces.len() < MAX_IDENTIFIER_TEXT_LEN - self.identifier_text.len() {
+            array_of_spaces.push(32);
+        }
 
-        Ok(data)
-    }
+        self.identifier_text =
+            self.identifier_text.clone() + std::str::from_utf8(&array_of_spaces).unwrap();
 
-    pub fn save(&self, account: &AccountInfo) -> ProgramResult {
-        self.serialize(&mut *account.data.borrow_mut())?;
         Ok(())
     }
 
-    pub fn can_still_rebalance(&self, unix_timestamp: i64) -> ProgramResult {
-        if !self.stop_unix_timestamp > unix_timestamp {
+    pub fn pad_keyword(&mut self) -> ProgramResult {
+        let mut array_of_spaces = vec![];
+        while array_of_spaces.len() < MAX_KEYWORD_LEN - self.keyword.len() {
+            array_of_spaces.push(32);
+        }
+
+        self.keyword =
+            self.keyword.clone() + std::str::from_utf8(&array_of_spaces).unwrap();
+
+        Ok(())
+    }
+    
+    pub fn can_mint_one_token(&self) -> ProgramResult {
+        if self.already_minted_voting_power + 1 > self.number_of_participants {
+            Err(VoteError::CannotMintMoreTokens.into())
+        } else {
+            Ok(())   
+        }
+    }
+
+    pub fn there_is_still_time(&self) -> ProgramResult {
+        let date = &Clock::get().unwrap().unix_timestamp;
+        if self.stop_unix_timestamp < *date + 600 {
             Err(VoteError::NotEligibleToRebalanceDueToTimestamp.into())
         } else {
             Ok(())
         }
     }
+
+    pub fn provided_keyword_matches(&self, keyword: &str) -> ProgramResult {
+        if *keyword != self.keyword {
+            Err(VoteError::KeywordsDoNotMatch.into())
+        } else {
+            Ok(())   
+        }
+    }
+
 }

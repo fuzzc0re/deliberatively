@@ -10,8 +10,8 @@ import {
   AccountMeta,
 } from "@solana/web3.js";
 
-import { DELIBERATIVELY_PROGRAM_ID, DELIBERATIVELY_SEED } from "../constants";
-import { VOTE_PARTICIPANT_SIZE } from "../state/voteParticipant";
+import { DELIBERATIVELY_PROGRAM_ID, DELIBERATIVELY_SEED, MAX_VOTE_PARTICIPANT_LEN } from "../constants";
+
 import { calculateCost } from "../utils";
 
 export const participate = async (
@@ -36,7 +36,7 @@ export const participate = async (
       " to become a voter in vote " + VOTE_PROGRAM_ID.toBase58()
     );
 
-    const requiredLamports = await calculateCost(connection, VOTE_PARTICIPANT_SIZE);
+    const requiredLamports = await calculateCost(connection, MAX_VOTE_PARTICIPANT_LEN);
     const balance = await connection.getBalance(prospectiveVoterPublicKey);
 
     if (balance < requiredLamports) {
@@ -49,8 +49,8 @@ export const participate = async (
           basePubkey: prospectiveVoterPublicKey,
           seed: DELIBERATIVELY_SEED[0].toString(),
           newAccountPubkey: prospectiveVoterSeededPublicKey,
-          lamports: requiredLamports - balance,
-          space: VOTE_PARTICIPANT_SIZE,
+          lamports: requiredLamports,
+          space: MAX_VOTE_PARTICIPANT_LEN,
           programId: DELIBERATIVELY_PROGRAM_ID,
         })
       );

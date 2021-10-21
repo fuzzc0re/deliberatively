@@ -1,4 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult};
 
 /// Handlers for each instruction
 pub mod vote_alternative;
@@ -18,3 +19,13 @@ pub enum Key {
     VoteParticipant,
     VoteAlternative,
 }
+
+pub trait VoteState {
+    fn key(&self) -> Key;
+    fn save(&self, account: &AccountInfo) -> ProgramResult;
+}
+
+pub const MAX_IDENTIFIER_TEXT_LEN: usize = 80;
+pub const MAX_KEYWORD_LEN: usize = 50;
+pub const MAX_NUMBER_OF_DAYS: usize = 365 * 4; // 4 years
+pub const MAX_PRESENTATION_TEXT_LEN: usize = 80;

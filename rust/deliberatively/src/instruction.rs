@@ -6,6 +6,7 @@ use solana_program::{
 };
 
 pub use crate::processor::init_vote_market::InitVoteMarketArgs;
+pub use crate::processor::participate_vote_market::ParticipateVoteMarketArgs;
 
 #[derive(Clone, BorshSerialize, BorshDeserialize, PartialEq)]
 pub enum VoteMarketInstruction {
@@ -24,9 +25,7 @@ pub enum VoteMarketInstruction {
     ///   6. `[]` The Rent sysvar.
     ///   7. `[]` The Token program.
     InitVoteMarket(InitVoteMarketArgs),
-    // ParticipateInVoteMarket(ParticipateInVoteMarketArgs),
-    // ContributeToVoteMarket(ContributeToVoteMarketArgs),
-    // // RebalanceVotePortfolio(RebalanceVotePortfolioArgs),
+    ParticipateVoteMarket(ParticipateVoteMarketArgs),
     // ProposeVoteAlternative(ProposeVoteAlternativeArgs),
     // SubmitVote(SubmitVoteArgs),
 }
@@ -37,7 +36,6 @@ pub fn init_vote_market_instruction(
     initializer_account: Pubkey,
     mint_account: Pubkey,
     program_mint_derived_account: Pubkey,
-    // token_holder_account: Pubkey,
     initializer_mint_derived_account: Pubkey,
     initializer_token_account: Pubkey,
     pda: Pubkey,
@@ -49,8 +47,6 @@ pub fn init_vote_market_instruction(
             AccountMeta::new_readonly(initializer_account, true),
             AccountMeta::new_readonly(mint_account, false),
             AccountMeta::new(program_mint_derived_account, false),
-            // AccountMeta::new(token_holder_account, false),
-            // AccountMeta::new(initializer_token_account, false),
             AccountMeta::new(initializer_mint_derived_account, false),
             AccountMeta::new_readonly(initializer_token_account, false),
             AccountMeta::new_readonly(pda, false),

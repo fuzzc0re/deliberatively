@@ -35,8 +35,10 @@ export const AppContainer: FC = () => {
     [network]
   );
 
-  const solanaEndpoint = useMemo(() => clusterApiUrl(network), [network]);
-  // const solanaEndpoint = "http://localhost:8899";
+  const solanaEndpoint =
+    process.env.NODE_ENV === "production"
+      ? useMemo(() => clusterApiUrl(network), [network])
+      : useMemo(() => "http://localhost:8899", [network]);
 
   return (
     <ConnectionProvider endpoint={solanaEndpoint}>

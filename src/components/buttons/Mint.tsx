@@ -13,13 +13,14 @@ import { StyledButton } from "../styled/Button";
 
 export const MintTokenButton: FC = () => {
   const {
-    // identifierText,
+    identifierText,
+    keyword,
     numberOfParticipants,
     // rebalancingCost,
     numberOfDays,
-    // keyword,
     maximumNumberOfRepresentatives,
     minimumContributionRequiredFromParticipant,
+    // participantPresentationText,
   } = useInitVoteMarketContext();
   const { connection } = useConnection();
   const { connected, wallet, publicKey, sendTransaction } = useWallet();
@@ -27,22 +28,24 @@ export const MintTokenButton: FC = () => {
 
   const args: InitVoteMarketArgs = useMemo(
     () => ({
-      // identifierText,
+      identifierText,
+      keyword,
       numberOfParticipants,
       // rebalancingCost,
       numberOfDays,
       maximumNumberOfRepresentatives,
       minimumContributionRequiredFromParticipant,
-      // keyword,
+      // participantPresentationText,
     }),
     [
-      // identifierText,
+      identifierText,
+      keyword,
       numberOfParticipants,
       // rebalancingCost,
       numberOfDays,
       maximumNumberOfRepresentatives,
       minimumContributionRequiredFromParticipant,
-      // keyword,
+      // participantPresentationText,
     ]
   );
 

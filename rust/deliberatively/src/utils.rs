@@ -63,9 +63,9 @@ pub fn assert_is_valid_address_with_seed(
     account_info: &AccountInfo,
     program_id: &Pubkey,
     seed: &str,
-    mint: &Pubkey,
+    base: &Pubkey, // mint for program derived pk
 ) -> ProgramResult {
-    let derived_address = Pubkey::create_with_seed(mint, seed, program_id)?;
+    let derived_address = Pubkey::create_with_seed(base, seed, program_id)?;
     if *account_info.key != derived_address {
         Err(VoteError::InvalidProgramDerivedAddress.into())
     } else {
@@ -109,7 +109,6 @@ pub fn try_from_slice_checked<T: BorshDeserialize>(
     if (data[0] != data_type as u8 && data[0] != Key::Uninitialized as u8)
         || data.len() != data_size
     {
-        msg!("Expected account len {}, got {}", data_size, data.len());
         return Err(VoteError::DataTypeMismatch.into());
     }
 

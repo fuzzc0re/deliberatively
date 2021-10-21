@@ -9,6 +9,8 @@ import { useVoteMarketContext } from "../hooks/useVoteMarketContext";
 import { GoToProposeAlternativeButton } from "../components/buttons/GoToProposeAlternative";
 import { GoToParticipateButton } from "../components/buttons/GoToParticipate";
 
+import { StyledTextField } from "../components/styled/TextField";
+
 // import { GoToParticipateButton } from "../components/buttons/GoToParticipate";
 // import { GoToContributeButton } from "../components/buttons/GoToContribute";
 
@@ -38,7 +40,7 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 
 const VoteMarket: FC = () => {
   const [balance, setBalance] = useState(0);
-  const { currentVoteMarket, isVoteParticipant } = useVoteMarketContext();
+  const { currentVoteMarket, myPresentationText, setMyPresentationText, isVoteParticipant } = useVoteMarketContext();
   const { connection } = useConnection();
   const { publicKey, connected } = useWallet();
 
@@ -58,15 +60,17 @@ const VoteMarket: FC = () => {
 
   useEffect(() => {
     if (isVoteParticipant) {
-      getTokenBalance();
+      setTimeout(() => {
+        getTokenBalance();
+      }, 200);
     }
   }, [currentVoteMarket, isVoteParticipant, publicKey, connection]);
 
   useEffect(() => {
-    if (!connected) {
+    if (!connected || !publicKey) {
       setBalance(0);
     }
-  }, [currentVoteMarket, connected]);
+  }, [currentVoteMarket, publicKey, connected]);
 
   return (
     <StyledGrid
@@ -80,9 +84,18 @@ const VoteMarket: FC = () => {
         <StyledTypography paragraph>Vote market: {currentVoteMarket?.address}</StyledTypography>
       </StyledGrid>
 
-      <StyledGrid item xs={1} sm={12} md={12}>
-        <StyledTypography paragraph>My voting power: {balance}</StyledTypography>
-      </StyledGrid>
+      {isVoteParticipant && (
+        <StyledGrid item xs={1} sm={12} md={12}>
+          <StyledTypography>My presentation text:</StyledTypography>
+          <StyledTextField multiline maxRows={2} value={myPresentationText} onChange={setMyPresentationText} />
+          <StyledTypography>70/80</StyledTypography>
+        </StyledGrid>
+      )}
+      {isVoteParticipant && (
+        <StyledGrid item xs={1} sm={12} md={12}>
+          <StyledTypography paragraph>My voting power: {balance}</StyledTypography>
+        </StyledGrid>
+      )}
 
       <StyledGrid item xs={1} sm={12} md={12}>
         {isVoteParticipant ? <GoToProposeAlternativeButton /> : <GoToParticipateButton />}

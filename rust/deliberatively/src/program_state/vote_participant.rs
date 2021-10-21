@@ -1,23 +1,29 @@
-use crate::{program_state::Key, utils::try_from_slice_checked};
+use crate::{
+    errors::VoteError,
+    program_state::{Key, VoteState, MAX_PRESENTATION_TEXT_LEN},
+    utils::try_from_slice_checked,
+};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::AccountInfo,
-    borsh::try_from_slice_unchecked,
     entrypoint::ProgramResult,
     program_error::ProgramError,
     // program_option::COption,
-    pubkey::Pubkey,
+    pubkey::{Pubkey, PUBKEY_BYTES},
 };
 
 pub const MAX_VOTE_PARTICIPANT_LEN: usize = 1 + // enum [key]
-    32 + // Pubkey [vote market token mint account address]
-    32 + // Pubkey [mint associated address of participant]
+    PUBKEY_BYTES + // = 32 [vote market token mint account address]
+    PUBKEY_BYTES + // = 32 [mint associated address of participant]
+    MAX_PRESENTATION_TEXT_LEN + // 
     1 + // bool [has provided keyword]
     1 + // bool [is representative]
-    32; // Pubkey [address of alternative proposed]
+    PUBKEY_BYTES + // = 32 [address of alternative proposed]
+    // TODO find out why here too;
+    4;
 
 #[repr(C)]
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
 pub struct VoteParticipant {
     /// For deserialization in order to recognize the type of state to modify.
     pub key: Key,
@@ -25,14 +31,29 @@ pub struct VoteParticipant {
     pub vote_market_pubkey: Pubkey,
     /// The participant's token holding address.
     pub vote_market_participant_pubkey: Pubkey,
-    // /// Is this an account created through the "participate" instruction or not?
-    // pub has_provided_keyword: bool,
+    /// Some text that will be presented to other participants.
+    pub presentation_text: String,
+    /// Is this an account created through the "participate" instruction or not?
+    pub has_provided_keyword: u8, // bool but borsh duh
     /// Is this account a representative?
     /// If yes then this account has the top [maximum_number_of_representatives] tokens.
-    pub is_representative: bool,
+    pub is_representative: u8,
     /// If the account is a representative then they might have proposed an alternative
     /// for the participants to vote on.
-    pub alternative: Option<Pubkey>,
+    /// If equal to vote_market_participant_pubkey then no alternative.
+    pub alternative: Pubkey,
+}
+
+impl VoteState for VoteParticipant {
+    fn key(&self) -> Key {
+        self.key
+    }
+
+    fn save(&self, account: &AccountInfo) -> ProgramResult {
+        self.serialize(&mut *account.data.borrow_mut())?;
+
+        Ok(())
+    }
 }
 
 impl VoteParticipant {
@@ -46,14 +67,23 @@ impl VoteParticipant {
         Ok(data)
     }
 
-    pub fn from_empty_account(a: &AccountInfo) -> Result<VoteParticipant, ProgramError> {
-        let data: VoteParticipant = try_from_slice_unchecked(&a.data.borrow_mut())?;
+    pub fn pad_presentation_text(&mut self) -> ProgramResult {
+        let mut array_of_spaces = vec![];
+        while array_of_spaces.len() < MAX_PRESENTATION_TEXT_LEN - self.presentation_text.len() {
+            array_of_spaces.push(32);
+        }
 
-        Ok(data)
+        self.presentation_text =
+            self.presentation_text.clone() + std::str::from_utf8(&array_of_spaces).unwrap();
+
+        Ok(())
     }
 
-    pub fn save(&self, account: &AccountInfo) -> ProgramResult {
-        self.serialize(&mut *account.data.borrow_mut())?;
-        Ok(())
+    pub fn has_not_proposed_alternative(&self) -> ProgramResult {
+        if self.alternative != self.vote_market_participant_pubkey {
+            Err(VoteError::RepresentativeHasAlreadyProposedAlternative.into())
+        } else {
+            Ok(())
+        }
     }
 }

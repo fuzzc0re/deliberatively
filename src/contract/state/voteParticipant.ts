@@ -1,48 +1,64 @@
-import { serialize } from "borsh";
+import { Connection, PublicKey } from "@solana/web3.js";
 
-// pub const MAX_VOTE_PARTICIPANT_LEN: usize = 1 + // enum [key]
-//     32 + // Pubkey [vote market token mint account address]
-//     32 + // Pubkey [mint associated address of participant]
-//     1 + // bool [has provided keyword]
-//     1 + // bool [is representative]
-//     32; // Pubkey [address of alternative proposed]
-//
-// #[repr(C)]
-// #[derive(BorshSerialize, BorshDeserialize, Debug)]
-// pub struct VoteParticipant {
-//     /// For deserialization in order to recognize the type of state to modify.
-//     pub key: Key,
-//     /// The vote market token mint that this participant is associated with.
-//     pub vote_market_pubkey: Pubkey,
-//     /// The participant's token holding address.
-//     pub vote_market_participant_pubkey: Pubkey,
-//     // /// Is this an account created through the "participate" instruction or not?
-//     // pub has_provided_keyword: bool,
-//     /// Is this account a representative?
-//     /// If yes then this account has the top [maximum_number_of_representatives] tokens.
-//     pub is_representative: bool,
-//     /// If the account is a representative then they might have proposed an alternative
-//     /// for the participants to vote on.
-//     pub alternative: Option<Pubkey>,
-// }
-//
-export class VoteParticipantAccount {
-  counter = 0;
-  constructor(fields: { counter: number } | undefined = undefined) {
-    if (fields) {
-      this.counter = fields.counter;
-    }
-  }
+import { Key, MAX_PRESENTATION_TEXT_LEN, MAX_PUBLIC_KEY_LEN } from "../constants";
+
+interface VoteParticipantState {
+  key: Key;
+  voteMarketPublicKey: PublicKey;
+  voteMarketParticipantPublicKey: PublicKey;
+  presentationText: string;
+  hasProvidedKeyword: boolean;
+  isRepresentative: boolean;
+  alternative: PublicKey;
 }
 
-export const VoteParticipantSchema = new Map([
-  [
-    VoteParticipantAccount,
-    {
-      kind: "struct",
-      fields: [["counter", "u32"]],
-    },
-  ],
-]);
+export const decodeVoteParticipantState = async (
+  connection: Connection,
+  ownTokenAccountPDA: PublicKey
+): Promise<VoteParticipantState> => {
+  const account = await connection.getParsedAccountInfo(ownTokenAccountPDA);
 
-export const VOTE_PARTICIPANT_SIZE = serialize(VoteParticipantSchema, new VoteParticipantAccount()).length;
+  const accountValueData = account?.value?.data.valueOf() as Uint8Array;
+  const key = accountValueData[0];
+
+  const stop1 = 1 + MAX_PUBLIC_KEY_LEN;
+  const voteMarketPKData = accountValueData.subarray(1, stop1);
+  // const voteMarketPKData = accountValueData.subarray(1, 33);
+  const voteMarketPublicKey = new PublicKey(voteMarketPKData);
+
+  const stop2 = stop1 + MAX_PUBLIC_KEY_LEN;
+  const voteMarketParticipantPKData = accountValueData.subarray(stop1, stop2);
+  // const voteMarketParticipantPKData = accountValueData.subarray(33, 65);
+  const voteMarketParticipantPublicKey = new PublicKey(voteMarketParticipantPKData);
+
+  // 65-68 is shit unused data
+  const stop3 = 4 + stop2;
+  const stop4 = stop3 + MAX_PRESENTATION_TEXT_LEN;
+  const presentationData = accountValueData.subarray(stop3, stop4);
+  // const presentationData = accountValueData.subarray(69, 149);
+  const dec = new TextDecoder();
+  const presentationText = dec.decode(presentationData);
+
+  const hasProvidedKeywordData = accountValueData[stop4];
+  // const hasProvidedKeywordData = accountValueData[149];
+
+  const stop5 = stop4 + 1;
+  const isRepresentativeData = accountValueData[stop5];
+  // const isRepresentativeData = accountValueData[150];
+
+  const stop6 = stop5 + 1;
+  const stop7 = stop5 + MAX_PUBLIC_KEY_LEN;
+  const alternativeData = accountValueData.subarray(stop6, stop7);
+  // const alternativeData = accountValueData.subarray(151, 183);
+  const alternative = new PublicKey(alternativeData);
+
+  return {
+    key,
+    voteMarketPublicKey,
+    voteMarketParticipantPublicKey,
+    presentationText,
+    hasProvidedKeyword: hasProvidedKeywordData === 1,
+    isRepresentative: isRepresentativeData === 1,
+    alternative,
+  };
+};
