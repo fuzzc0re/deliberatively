@@ -1,4 +1,4 @@
-import { FC, useState, ChangeEvent } from "react";
+import { FC, useState, useMemo, ChangeEvent } from "react";
 
 import { StyledTextField } from "../styled/TextField";
 
@@ -30,24 +30,29 @@ export const TextFieldMaximumNumberOfRepresentatives: FC = () => {
     }
   };
 
+  const helperText = useMemo(() => {
+    if (hasError) {
+      return "Representatives can be at most 1/5 of participants.";
+    } else {
+      return "Every representative needs to have at least more than 1 tokens.";
+    }
+  }, [hasError]);
+
   return (
     <StyledTextField
       variant="outlined"
       focused
+      fullWidth
       color="secondary"
       id="no_of_representatives_textfield"
       type="number"
       inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-      label="Maximum number of representatives"
+      label="Maximum  representatives"
       InputLabelProps={{
         shrink: true,
       }}
       error={hasError}
-      helperText={
-        hasError
-          ? "Representatives can be at most a 5th of participants."
-          : "Representatives need to have at least more than 1 tokens"
-      }
+      helperText={helperText}
       InputProps={{ inputProps: { min: 2 } }}
       value={noOfRepresentatives}
       onChange={handleNoOfRepresentativesChange}

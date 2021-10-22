@@ -21,7 +21,7 @@ import {
   MAX_VOTE_PARTICIPANT_LEN,
   MAX_IDENTIFIER_TEXT_LEN,
   MAX_KEYWORD_LEN,
-  // MAX_PRESENTATION_TEXT_LEN,
+  MAX_PRESENTATION_TEXT_LEN,
 } from "../constants";
 
 export interface InitVoteMarketArgs {
@@ -31,7 +31,7 @@ export interface InitVoteMarketArgs {
   maximumNumberOfRepresentatives: number;
   numberOfDays: number;
   minimumContributionRequiredFromParticipant: number;
-  // participantPresentationText: string;
+  participantPresentationText: string;
 }
 
 class InitVoteMarketInstructionData extends Struct {
@@ -43,7 +43,7 @@ class InitVoteMarketInstructionData extends Struct {
   maximumNumberOfRepresentatives = 2;
   numberOfDays = 1;
   minimumContributionRequiredFromParticipant = 1000; // lamports
-  // participantPresentationText = "some participant presentation text";
+  participantPresentationText = "some participant presentation text";
   constructor(fields: InitVoteMarketArgs) {
     super(fields);
     this.instruction = Instruction.InitVoteMarket;
@@ -54,7 +54,7 @@ class InitVoteMarketInstructionData extends Struct {
     this.maximumNumberOfRepresentatives = fields.maximumNumberOfRepresentatives;
     this.numberOfDays = fields.numberOfDays;
     this.minimumContributionRequiredFromParticipant = fields.minimumContributionRequiredFromParticipant;
-    // this.participantPresentationText = fields.participantPresentationText;
+    this.participantPresentationText = fields.participantPresentationText;
   }
 }
 
@@ -69,7 +69,7 @@ SOLANA_SCHEMA.set(InitVoteMarketInstructionData, {
     ["maximumNumberOfRepresentatives", "u32"],
     ["numberOfDays", "u16"],
     ["minimumContributionRequiredFromParticipant", "u64"],
-    // ["participantPresentationText", "string"],
+    ["participantPresentationText", "string"],
   ],
 });
 
@@ -220,10 +220,10 @@ export const initVoteMarket = async (
 
   const sanitizedIdentifierText = puffText(args.identifierText, MAX_IDENTIFIER_TEXT_LEN);
   const sanitizedKeyword = puffText(args.keyword, MAX_KEYWORD_LEN);
-  // const sanitizerParticipantPresentationText = puffText(
-  //   "Some participant presentation text",
-  //   MAX_PRESENTATION_TEXT_LEN
-  // );
+  const sanitizerParticipantPresentationText = puffText(
+    "Some participant presentation text",
+    MAX_PRESENTATION_TEXT_LEN
+  );
 
   const newVoteMarketInstructionData = new InitVoteMarketInstructionData({
     identifierText: sanitizedIdentifierText,
@@ -233,7 +233,7 @@ export const initVoteMarket = async (
     maximumNumberOfRepresentatives: args.maximumNumberOfRepresentatives,
     numberOfDays: args.numberOfDays,
     minimumContributionRequiredFromParticipant: args.minimumContributionRequiredFromParticipant,
-    // participantPresentationText: sanitizerParticipantPresentationText,
+    participantPresentationText: sanitizerParticipantPresentationText,
   });
 
   const instructionBuffer = newVoteMarketInstructionData.encode();

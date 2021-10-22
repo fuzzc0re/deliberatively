@@ -25,7 +25,7 @@ pub trait VoteState {
     fn save(&self, account: &AccountInfo) -> ProgramResult;
 }
 
-pub const MAX_IDENTIFIER_TEXT_LEN: usize = 80;
+pub const MAX_MARKET_IDENTIFIER_TEXT_LEN: usize = 80;
 pub const MAX_KEYWORD_LEN: usize = 50;
 pub const MAX_NUMBER_OF_DAYS: usize = 365 * 4; // 4 years
-pub const MAX_PRESENTATION_TEXT_LEN: usize = 80;
+pub const MAX_PARTICIPANT_PRESENTATION_TEXT_LEN: usize = 80;

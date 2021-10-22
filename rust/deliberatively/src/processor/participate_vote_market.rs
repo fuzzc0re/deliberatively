@@ -2,7 +2,7 @@ use crate::{
     errors::VoteError,
     program_state::{
         vote_market::VoteMarket, vote_participant::VoteParticipant, Key, VoteState,
-        MAX_KEYWORD_LEN, MAX_PRESENTATION_TEXT_LEN,
+        MAX_KEYWORD_LEN, MAX_PARTICIPANT_PRESENTATION_TEXT_LEN,
     },
     utils::{
         assert_account_is_empty, assert_account_is_owned_by, assert_account_is_rent_exempt,
@@ -82,13 +82,13 @@ pub struct ParticipateVoteMarketArgs {
     /// Prospective participant needs to provide this in order to receive 1 token.
     pub keyword: String,
     /// Some presentation text to be associated with the participant's profile.
-    pub presentation_text: String,
+    pub participant_presentation_text: String,
 }
 
 fn check_args(args: &ParticipateVoteMarketArgs) -> ProgramResult {
     if args.keyword.len() > MAX_KEYWORD_LEN {
         Err(VoteError::LargeKeywordText.into())
-    } else if args.presentation_text.len() > MAX_PRESENTATION_TEXT_LEN {
+    } else if args.participant_presentation_text.len() > MAX_PARTICIPANT_PRESENTATION_TEXT_LEN {
         Err(VoteError::LargePresentationText.into())
     } else {
         Ok(())
@@ -139,7 +139,7 @@ pub fn process_participate_vote_market(
     vote_participant_data.key = Key::VoteParticipant;
     vote_participant_data.vote_market_pubkey = *accounts.mint.key;
     vote_participant_data.vote_market_participant_pubkey = *accounts.participant_token_account.key;
-    vote_participant_data.presentation_text = args.presentation_text;
+    vote_participant_data.presentation_text = args.participant_presentation_text;
     vote_participant_data.pad_presentation_text()?;
     vote_participant_data.has_provided_keyword = 1;
     vote_participant_data.is_representative = 0;

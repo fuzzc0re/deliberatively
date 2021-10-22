@@ -10,7 +10,7 @@ interface IInitVoteMarketContext extends InitVoteMarketArgs {
   setMaximumNumberOfRepresentatives: (representatives: number) => void;
   setNumberOfDays: (days: number) => void;
   setMinimumContributionRequiredFromParticipant: (contribution: number) => void;
-  // setParticipantPresentationText: (text: string) => void;
+  setParticipantPresentationText: (text: string) => void;
 }
 
 const initVoteMarketContextDefaults: IInitVoteMarketContext = {
@@ -21,7 +21,7 @@ const initVoteMarketContextDefaults: IInitVoteMarketContext = {
   maximumNumberOfRepresentatives: 2,
   numberOfDays: 1,
   minimumContributionRequiredFromParticipant: 0.1,
-  // participantPresentationText: "Some participant presentation text",
+  participantPresentationText: "Some participant presentation text",
   setIdentifierText: (text: string) => {
     console.log(text);
     return;
@@ -50,10 +50,10 @@ const initVoteMarketContextDefaults: IInitVoteMarketContext = {
     console.log(contribution);
     return;
   },
-  // setParticipantPresentationText: (text: string) => {
-  //   console.log(text);
-  //   return;
-  // },
+  setParticipantPresentationText: (text: string) => {
+    console.log(text);
+    return;
+  },
 };
 
 export const InitVoteMarketContext = createContext<IInitVoteMarketContext>(initVoteMarketContextDefaults);
@@ -66,7 +66,7 @@ export const InitVoteMarketContextProvider: FC = ({ children }) => {
   const [maximumNumberOfRepresentatives, setMaximumNumberOfRepresentatives] = useState(2);
   const [numberOfDays, setNumberOfDays] = useState(1);
   const [minimumContributionRequiredFromParticipant, setMinimumContributionRequiredFromParticipant] = useState(0.1);
-  // const [participantPresentationText, setParticipantPresentationText] = useState("Some participant presentation text");
+  const [participantPresentationText, setParticipantPresentationText] = useState("Some participant presentation text");
 
   return (
     <InitVoteMarketContext.Provider
@@ -78,7 +78,7 @@ export const InitVoteMarketContextProvider: FC = ({ children }) => {
         maximumNumberOfRepresentatives,
         numberOfDays,
         minimumContributionRequiredFromParticipant,
-        // participantPresentationText,
+        participantPresentationText,
         setIdentifierText,
         setKeyword,
         setNumberOfParticipants,
@@ -86,7 +86,7 @@ export const InitVoteMarketContextProvider: FC = ({ children }) => {
         setMaximumNumberOfRepresentatives,
         setNumberOfDays,
         setMinimumContributionRequiredFromParticipant,
-        // setParticipantPresentationText,
+        setParticipantPresentationText,
       }}
     >
       {children}

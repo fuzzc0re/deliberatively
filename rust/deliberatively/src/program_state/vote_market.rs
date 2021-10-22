@@ -1,7 +1,7 @@
 use crate::{
     errors::VoteError, 
     program_state::{
-        Key, VoteState, MAX_IDENTIFIER_TEXT_LEN, MAX_KEYWORD_LEN
+        Key, VoteState, MAX_MARKET_IDENTIFIER_TEXT_LEN, MAX_KEYWORD_LEN
     }, 
     utils::try_from_slice_checked
 };
@@ -16,7 +16,7 @@ use solana_program::{
 };
 
 pub const MAX_VOTE_MARKET_LEN: usize = 1 + // enum [key]
-    MAX_IDENTIFIER_TEXT_LEN + 
+    MAX_MARKET_IDENTIFIER_TEXT_LEN + 
     MAX_KEYWORD_LEN +
     PUBKEY_BYTES + // 32
     4 + // u32 [number of participants]
@@ -89,7 +89,7 @@ impl VoteMarket {
 
     pub fn pad_identifier_text(&mut self) -> ProgramResult {
         let mut array_of_spaces = vec![];
-        while array_of_spaces.len() < MAX_IDENTIFIER_TEXT_LEN - self.identifier_text.len() {
+        while array_of_spaces.len() < MAX_MARKET_IDENTIFIER_TEXT_LEN - self.identifier_text.len() {
             array_of_spaces.push(32);
         }
 

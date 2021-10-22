@@ -31,6 +31,7 @@ export const TextFieldNumberOfDays: FC = () => {
     <StyledTextField
       variant="outlined"
       focused
+      fullWidth
       color="secondary"
       id="no_of_days_textfield"
       type="number"
@@ -39,7 +40,7 @@ export const TextFieldNumberOfDays: FC = () => {
       InputLabelProps={{
         shrink: true,
       }}
-      helperText="Representatives can start proposing alternatives afterwards"
+      helperText="Representatives can start proposing alternatives after this has elapsed."
       InputProps={{ inputProps: { min: 1, max: 10000 } }}
       value={noOfDays}
       onChange={handleNoOfDaysChange}

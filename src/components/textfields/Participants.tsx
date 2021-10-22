@@ -31,16 +31,17 @@ export const TextFieldParticipants: FC = () => {
     <StyledTextField
       variant="outlined"
       focused
+      fullWidth
       color="secondary"
       id="no_of_participants_textfield"
       type="number"
       inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-      label="Participants"
+      label="Number of participants"
       InputLabelProps={{
         shrink: true,
       }}
       // size="small"
-      helperText="Equals to the maximum number of mintable tokens"
+      helperText="Equals to the maximum number of mintable tokens."
       InputProps={{ inputProps: { min: 5, max: 10000000000 } }}
       value={noOfParticipants}
       onChange={handleNoOfParticipantsChange}

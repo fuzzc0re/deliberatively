@@ -14,9 +14,7 @@ import { useInitVoteMarketContext } from "../../hooks/useInitVoteMarketContext";
 import { StyledButton } from "../styled/Button";
 
 const StyledCircularProgress = styled(CircularProgress)(({ theme }) => ({
-  width: theme.spacing(0.05),
-  height: theme.spacing(0.05),
-  color: theme.palette.primary.contrastText,
+  color: theme.palette.primary.main,
 }));
 
 export const MintTokenButton: FC = () => {
@@ -28,7 +26,7 @@ export const MintTokenButton: FC = () => {
     numberOfDays,
     maximumNumberOfRepresentatives,
     minimumContributionRequiredFromParticipant,
-    // participantPresentationText,
+    participantPresentationText,
   } = useInitVoteMarketContext();
   const { connection } = useConnection();
   const { connected, wallet, publicKey, sendTransaction } = useWallet();
@@ -44,7 +42,7 @@ export const MintTokenButton: FC = () => {
       numberOfDays,
       maximumNumberOfRepresentatives,
       minimumContributionRequiredFromParticipant,
-      // participantPresentationText,
+      participantPresentationText,
     }),
     [
       identifierText,
@@ -54,7 +52,7 @@ export const MintTokenButton: FC = () => {
       numberOfDays,
       maximumNumberOfRepresentatives,
       minimumContributionRequiredFromParticipant,
-      // participantPresentationText,
+      participantPresentationText,
     ]
   );
 
@@ -102,7 +100,7 @@ export const MintTokenButton: FC = () => {
 
   return (
     <StyledButton disabled={buttonDisabled} disableRipple onClick={handleClick}>
-      {buttonDisabled ? <StyledCircularProgress /> : "MINT"}
+      {buttonDisabled ? <StyledCircularProgress size={30} thickness={2.5} /> : "MINT"}
     </StyledButton>
   );
 };

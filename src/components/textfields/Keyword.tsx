@@ -2,10 +2,12 @@ import { FC, useState, useMemo, ChangeEvent } from "react";
 
 import { StyledTextField } from "../styled/TextField";
 
-// import { useInitVoteMarketContext } from "../../hooks/useInitVoteMarketContext";
+import { useInitVoteMarketContext } from "../../hooks/useInitVoteMarketContext";
+
+import { MAX_KEYWORD_LEN } from "../../contract/constants";
 
 export const TextFieldKeyword: FC = () => {
-  // const { setKeyword } = useInitVoteMarketContext();
+  const { setKeyword } = useInitVoteMarketContext();
   const [secretKeyword, setSecretKeyword] = useState("");
   const [hasError, setHasError] = useState(false);
 
@@ -19,7 +21,7 @@ export const TextFieldKeyword: FC = () => {
 
   const checkKeyword = (keyword: string) => {
     const keywordCount = keyword.length;
-    if (keywordCount < 8 || keywordCount > 36) {
+    if (keywordCount < 8 || keywordCount > MAX_KEYWORD_LEN) {
       if (!hasError) {
         throw new Error("Bad keyword");
       }
@@ -33,7 +35,7 @@ export const TextFieldKeyword: FC = () => {
       try {
         checkKeyword(e.target.value);
         setSecretKeyword(e.target.value);
-        // setKeyword(e.target.value);
+        setKeyword(e.target.value);
       } catch {
         if (!hasError) {
           toggleError();
@@ -49,15 +51,22 @@ export const TextFieldKeyword: FC = () => {
 
   const helperText = useMemo(() => {
     if (hasError) {
-      return "Needs to be between 8 and 128 characters";
+      return `Needs to be between 8 and ${MAX_KEYWORD_LEN} characters`;
     } else {
-      return "Voters can use this to receive vote tokens";
+      if (secretKeyword.length > 8) {
+        return `Remaining characters: ${secretKeyword.length}/${MAX_KEYWORD_LEN}`;
+      } else {
+        return "Participants will need to provide this in order to receive 1 vote token.";
+      }
     }
-  }, [hasError]);
+  }, [hasError, secretKeyword]);
 
   return (
     <StyledTextField
-      variant="filled"
+      variant="outlined"
+      focused
+      color="secondary"
+      fullWidth
       id="keyword_textfield"
       type="string"
       label="Keyword"
@@ -65,7 +74,6 @@ export const TextFieldKeyword: FC = () => {
       InputLabelProps={{
         shrink: true,
       }}
-      size="small"
       helperText={helperText}
       value={secretKeyword}
       onChange={handleKeywordChange}

@@ -1,6 +1,6 @@
 use crate::{
     errors::VoteError,
-    program_state::{Key, VoteState, MAX_PRESENTATION_TEXT_LEN},
+    program_state::{Key, VoteState, MAX_PARTICIPANT_PRESENTATION_TEXT_LEN},
     utils::try_from_slice_checked,
 };
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -15,7 +15,7 @@ use solana_program::{
 pub const MAX_VOTE_PARTICIPANT_LEN: usize = 1 + // enum [key]
     PUBKEY_BYTES + // = 32 [vote market token mint account address]
     PUBKEY_BYTES + // = 32 [mint associated address of participant]
-    MAX_PRESENTATION_TEXT_LEN + // 
+    MAX_PARTICIPANT_PRESENTATION_TEXT_LEN + // 
     1 + // bool [has provided keyword]
     1 + // bool [is representative]
     PUBKEY_BYTES + // = 32 [address of alternative proposed]
@@ -69,7 +69,9 @@ impl VoteParticipant {
 
     pub fn pad_presentation_text(&mut self) -> ProgramResult {
         let mut array_of_spaces = vec![];
-        while array_of_spaces.len() < MAX_PRESENTATION_TEXT_LEN - self.presentation_text.len() {
+        while array_of_spaces.len()
+            < MAX_PARTICIPANT_PRESENTATION_TEXT_LEN - self.presentation_text.len()
+        {
             array_of_spaces.push(32);
         }
 

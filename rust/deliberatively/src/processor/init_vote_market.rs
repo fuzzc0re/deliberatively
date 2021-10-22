@@ -2,7 +2,8 @@ use crate::{
     errors::VoteError,
     program_state::{
         vote_market::VoteMarket, vote_participant::VoteParticipant, Key, VoteState,
-        MAX_IDENTIFIER_TEXT_LEN, MAX_KEYWORD_LEN, MAX_NUMBER_OF_DAYS,
+        MAX_KEYWORD_LEN, MAX_MARKET_IDENTIFIER_TEXT_LEN, MAX_NUMBER_OF_DAYS,
+        MAX_PARTICIPANT_PRESENTATION_TEXT_LEN,
     },
     utils::{
         assert_account_is_empty, assert_account_is_owned_by, assert_account_is_rent_exempt,
@@ -80,7 +81,7 @@ fn parse_accounts<'a, 'b: 'a>(
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
 pub struct InitVoteMarketArgs {
     /// Identifier for the vote market.
-    pub identifier_text: String,
+    pub market_identifier_text: String,
     /// Potential participants need to provide this in order to receive 1 token once
     pub keyword: String,
     /// Number of participants == number of minted tokens
@@ -94,15 +95,19 @@ pub struct InitVoteMarketArgs {
     pub number_of_days: u16,
     /// If > 0 then a participant needs to lock this amount of tokens to the vote market.
     pub minimum_contribution_required_from_participant: u64,
+    /// In case the initializer wants to provide a presentation text in one go.
+    pub participant_presentation_text: String,
 }
 
 fn check_args(args: &InitVoteMarketArgs) -> ProgramResult {
-    if args.identifier_text.len() > MAX_IDENTIFIER_TEXT_LEN {
+    if args.market_identifier_text.len() > MAX_MARKET_IDENTIFIER_TEXT_LEN {
         Err(VoteError::LargeIdentifierText.into())
     } else if args.keyword.len() > MAX_KEYWORD_LEN {
         Err(VoteError::LargeKeywordText.into())
     } else if args.number_of_days > MAX_NUMBER_OF_DAYS as u16 {
         Err(VoteError::LargeNumberOfDays.into())
+    } else if args.participant_presentation_text.len() > MAX_PARTICIPANT_PRESENTATION_TEXT_LEN {
+        Err(VoteError::LargePresentationText.into())
     } else {
         Ok(())
     }
@@ -119,7 +124,7 @@ pub fn process_init_vote_market(
 
     let mut vote_market_data = VoteMarket::from_account_info(accounts.program_mint_derived)?;
     vote_market_data.key = Key::VoteMarket;
-    vote_market_data.identifier_text = args.identifier_text;
+    vote_market_data.identifier_text = args.market_identifier_text;
     vote_market_data.pad_identifier_text()?;
     vote_market_data.keyword = args.keyword;
     vote_market_data.pad_keyword()?;
@@ -186,7 +191,11 @@ pub fn process_init_vote_market(
     vote_participant_data.key = Key::VoteParticipant;
     vote_participant_data.vote_market_pubkey = *accounts.mint.key;
     vote_participant_data.vote_market_participant_pubkey = *accounts.initializer_token_account.key;
-    vote_participant_data.presentation_text = String::from("Hello, I am using deliberatively!");
+    if args.participant_presentation_text != "" {
+        vote_participant_data.presentation_text = args.participant_presentation_text;
+    } else {
+        vote_participant_data.presentation_text = String::from("Hello, I am using deliberatively!");
+    }
     vote_participant_data.pad_presentation_text()?;
     vote_participant_data.has_provided_keyword = 1;
     vote_participant_data.is_representative = 0;

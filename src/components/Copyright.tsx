@@ -23,6 +23,7 @@ const StyledLink = styled(Link)(({ theme }) => ({
 
 const StyledDiv = styled("div")(({ theme }) => ({
   position: "fixed",
+  margin: 0,
   bottom: 0,
   left: 0,
   right: 0,
