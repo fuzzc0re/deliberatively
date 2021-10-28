@@ -1,7 +1,6 @@
-import { FC, useState, useEffect, useCallback } from "react";
+import { FC } from "react";
 import { Grid, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { PublicKey } from "@solana/web3.js";
 import { useConnection } from "@solana/wallet-adapter-react";
 
 import { useVoteMarketContext } from "../hooks/useVoteMarketContext";
@@ -25,23 +24,9 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 }));
 
 const VoteMarket: FC = () => {
-  const { currentVoteMarket, myPresentationText, setMyPresentationText, isVoteParticipant } = useVoteMarketContext();
+  const { currentVoteMarket, balance, isVoteParticipant, myPresentationText, setMyPresentationText } =
+    useVoteMarketContext();
   const { connection } = useConnection();
-  const [balance, setBalance] = useState(0);
-
-  const checkBalance = useCallback(async () => {
-    if (currentVoteMarket && currentVoteMarket.ownTokenAddress && isVoteParticipant) {
-      const ownPublicKey = new PublicKey(currentVoteMarket.ownTokenAddress);
-      const tokenAccountBalance = await connection.getTokenAccountBalance(ownPublicKey);
-      if (tokenAccountBalance.value.uiAmount) {
-        setBalance(tokenAccountBalance.value.uiAmount);
-      }
-    }
-  }, [currentVoteMarket, isVoteParticipant, setBalance]);
-
-  useEffect(() => {
-    checkBalance();
-  }, [currentVoteMarket, isVoteParticipant, setBalance]);
 
   return (
     <StyledGrid

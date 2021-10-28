@@ -27,6 +27,7 @@ import {
 interface IVoteMarketContext {
   // mintKeypair?: Signer;
   currentVoteMarket?: IVoteMarket;
+  balance: number;
   lastSelectedVoteMarketHash: string;
   isVoteParticipant: boolean;
   myPresentationText: string;
@@ -55,6 +56,7 @@ const defaultVoteMarket: IVoteMarket = {
 const voteMarketContextDefaults: IVoteMarketContext = {
   // mintKeypair: undefined,
   currentVoteMarket: undefined,
+  balance: 0,
   lastSelectedVoteMarketHash: "",
   isVoteParticipant: false,
   myPresentationText: "",
@@ -92,6 +94,7 @@ export const VoteMarketContextProvider: FC = ({ children }) => {
   const { connection } = useConnection();
   const { publicKey, connected, disconnecting } = useWallet();
   const [addressIsValid, setAddressIsValid] = useState(false);
+  const [balance, setBalance] = useState(0);
   const [isVoteParticipant, setIsVoteParticipant] = useState(false);
   const [myPresentationText, setMyPresentationText] = useState("");
   const [currentVoteMarket, setCurrentVoteMarket] = useStorageState("currentVoteMarket", defaultVoteMarket);
@@ -150,6 +153,14 @@ export const VoteMarketContextProvider: FC = ({ children }) => {
         if (voteParticipantState.key === Key.VoteParticipant) {
           setIsVoteParticipant(true);
           setMyPresentationText(voteParticipantState.presentationText);
+
+          if (currentVoteMarket.ownTokenAddress) {
+            const ownPublicKey = new PublicKey(currentVoteMarket.ownTokenAddress);
+            const tokenAccountBalance = await connection.getTokenAccountBalance(ownPublicKey);
+            if (tokenAccountBalance.value.uiAmount) {
+              setBalance(tokenAccountBalance.value.uiAmount);
+            }
+          }
         }
 
         // const programTokenAccountPDA = await getContractPDA(mintAccountPublicKey);
@@ -167,6 +178,7 @@ export const VoteMarketContextProvider: FC = ({ children }) => {
     currentVoteMarket,
     mintAccountPublicKey,
     setIsVoteParticipant,
+    setBalance,
     setMyPresentationText,
   ]);
 
@@ -195,7 +207,7 @@ export const VoteMarketContextProvider: FC = ({ children }) => {
     if (basenameIsMarket && voteMarketAddressLengthGreaterThanZero) {
       checkVoteMarketAddress();
     }
-  }, [basename, voteMarketAddress]);
+  }, [basename, voteMarketAddress, extraPath]);
 
   useEffect(() => {
     if (disconnecting || !connected) {
@@ -226,6 +238,7 @@ export const VoteMarketContextProvider: FC = ({ children }) => {
       value={{
         // mintKeypair,
         currentVoteMarket,
+        balance,
         lastSelectedVoteMarketHash,
         isVoteParticipant,
         myPresentationText,
