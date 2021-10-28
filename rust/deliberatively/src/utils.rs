@@ -88,14 +88,15 @@ pub fn assert_is_valid_pda(account_info: &AccountInfo, pda: &Pubkey) -> ProgramR
     }
 }
 
-pub fn assert_pda_is_mint_authority(
+pub fn assert_pda_is_mint_and_freeze_authority(
     pda: &Pubkey,
     mint_account_info: &AccountInfo,
 ) -> ProgramResult {
     let mint_data = spl_token::state::Mint::unpack_from_slice(&mint_account_info.data.borrow())?;
     let mint_authority = mint_data.mint_authority.unwrap();
-    if mint_authority != *pda {
-        Err(VoteError::ProgramIsNotMintAuthority.into())
+    let freeze_authority = mint_data.freeze_authority.unwrap();
+    if freeze_authority != *pda || mint_authority != *pda {
+        Err(VoteError::ProgramIsNotMintAndFreezeAuthority.into())
     } else {
         Ok(())
     }

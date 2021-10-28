@@ -1,10 +1,12 @@
 import { FC, ChangeEvent, createContext, useState, useEffect, useMemo, useCallback } from "react";
-import { PublicKey } from "@solana/web3.js";
+import {
+  // Signer
+  PublicKey,
+} from "@solana/web3.js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useHistory, useLocation } from "react-router-dom";
-import useLocalStorageState from "use-local-storage-state";
 
-import { getAccountPDA, getContractPDA } from "../contract/utils";
+import { useStorageState } from "../hooks/useStorageState";
 
 import { IVoteMarket, getAllVoteMarkets, deleteVoteMarket, getOrSetVoteMarket } from "../models/VoteMarket";
 import { IVoteParticipant, getAllVoteParticipants } from "../models/VoteParticipant";
@@ -13,11 +15,17 @@ import { IVoteAlternative, getAllVoteAlternatives } from "../models/VoteAlternat
 import { voteMarketAddressValidator } from "../utils/validators";
 import { sha256 } from "../utils/db";
 
-import { decodeVoteMarketState } from "../contract/state/VoteMarket";
+// import { decodeVoteMarketState } from "../contract/state/VoteMarket";
 import { decodeVoteParticipantState } from "../contract/state/voteParticipant";
 import { Key } from "../contract/constants";
+import {
+  // convertBase64URLToKeypair,
+  getAccountPDA,
+  // getContractPDA,
+} from "../contract/utils";
 
 interface IVoteMarketContext {
+  // mintKeypair?: Signer;
   currentVoteMarket?: IVoteMarket;
   lastSelectedVoteMarketHash: string;
   isVoteParticipant: boolean;
@@ -30,7 +38,22 @@ interface IVoteMarketContext {
   setMyPresentationText: (event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => void;
 }
 
+const defaultVoteMarket: IVoteMarket = {
+  address: "",
+  hash: "",
+  pda: "",
+  identifierText: "",
+  numberOfParticipants: 0,
+  maxRepresentatives: 0,
+  startDate: Date.now(),
+  stopDate: Date.now(),
+  minimumContributionRequiredFromParticipant: 0,
+  participants: [],
+  alternatives: [],
+};
+
 const voteMarketContextDefaults: IVoteMarketContext = {
+  // mintKeypair: undefined,
   currentVoteMarket: undefined,
   lastSelectedVoteMarketHash: "",
   isVoteParticipant: false,
@@ -68,83 +91,117 @@ export const VoteMarketContext = createContext<IVoteMarketContext>(voteMarketCon
 export const VoteMarketContextProvider: FC = ({ children }) => {
   const { connection } = useConnection();
   const { publicKey, connected, disconnecting } = useWallet();
+  const [addressIsValid, setAddressIsValid] = useState(false);
   const [isVoteParticipant, setIsVoteParticipant] = useState(false);
   const [myPresentationText, setMyPresentationText] = useState("");
-  const [currentVoteMarket, setCurrentVoteMarket] = useLocalStorageState(
-    "currentVoteMarket",
-    voteMarketContextDefaults.currentVoteMarket
-  );
-  const [lastSelectedVoteMarketHash, setLastSelectedVoteMarketHash] = useLocalStorageState(
-    "lastSelectedVoteMarketHash",
-    ""
-  );
+  const [currentVoteMarket, setCurrentVoteMarket] = useStorageState("currentVoteMarket", defaultVoteMarket);
+  const [lastSelectedVoteMarketHash, setLastSelectedVoteMarketHash] = useStorageState("lastSelectedVoteMarketHash", "");
 
   const history = useHistory();
   const location = useLocation();
 
-  const [basename, voteMarketAddress] = useMemo(
-    () => [location.pathname.split(/[\\/]/)[1], location.pathname.split(/[\\/]/)[2]],
-    [location.pathname]
-  );
+  const [basename, voteMarketAddress, extraPath] = useMemo(() => {
+    const paths = location.pathname.split(/[\\/]/);
+    if (paths[3]) {
+      return [paths[1], paths[2], paths[3]];
+    } else {
+      return [paths[1], paths[2]];
+    }
+  }, [location.pathname]);
+
+  const voteMarketAddressLengthGreaterThanZero = useMemo(() => {
+    if (voteMarketAddress && voteMarketAddress !== "" && voteMarketAddress.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }, [basename, voteMarketAddress]);
+
+  const basenameIsMarket = useMemo(() => {
+    if (basename && basename === "market") {
+      return true;
+    } else {
+      return false;
+    }
+  }, [basename]);
+
+  const mintAccountPublicKey = useMemo(() => {
+    if (basenameIsMarket && voteMarketAddressLengthGreaterThanZero && addressIsValid) {
+      return new PublicKey(voteMarketAddress);
+    }
+  }, [basename, voteMarketAddress, addressIsValid]);
+
+  // const mintKeypair = useMemo(() => {
+  //   if (basenameIsMarket && voteMarketAddressLengthGreaterThanZero && addressIsValid) {
+  //     try {
+  //       return convertBase64URLToKeypair(voteMarketAddress);
+  //     } catch {
+  //       return undefined;
+  //     }
+  //   }
+  // }, [basename, voteMarketAddress, addressIsValid]);
 
   const checkIsVoteParticipant = useCallback(async () => {
-    if (currentVoteMarket && currentVoteMarket.address && publicKey) {
+    if (publicKey && connected && addressIsValid && currentVoteMarket && mintAccountPublicKey) {
       try {
-        const mintAccountPublicKey = new PublicKey(currentVoteMarket.address);
         const ownTokenAccountPDA = await getAccountPDA(mintAccountPublicKey, publicKey);
         const voteParticipantState = await decodeVoteParticipantState(connection, ownTokenAccountPDA);
-        console.log(voteParticipantState);
+        // console.log(voteParticipantState);
         if (voteParticipantState.key === Key.VoteParticipant) {
           setIsVoteParticipant(true);
           setMyPresentationText(voteParticipantState.presentationText);
         }
 
-        const programTokenAccountPDA = await getContractPDA(mintAccountPublicKey);
-        const voteMarketState = await decodeVoteMarketState(connection, programTokenAccountPDA);
-        console.log(voteMarketState);
+        // const programTokenAccountPDA = await getContractPDA(mintAccountPublicKey);
+        // const voteMarketState = await decodeVoteMarketState(connection, programTokenAccountPDA);
+        // console.log(voteMarketState);
       } catch (error) {
         console.log(error);
       }
     }
-  }, [currentVoteMarket, publicKey, connection]);
+  }, [
+    publicKey,
+    connected,
+    extraPath,
+    addressIsValid,
+    currentVoteMarket,
+    mintAccountPublicKey,
+    setIsVoteParticipant,
+    setMyPresentationText,
+  ]);
 
   const checkVoteMarketAddress = useCallback(async () => {
-    if (basename === "" || !voteMarketAddress || voteMarketAddress === "") return;
-    // TODO Check first if valid address then if in db then solana
+    if (!basenameIsMarket || !voteMarketAddressLengthGreaterThanZero) return;
     const validated = await voteMarketAddressValidator(connection, voteMarketAddress);
     if (validated) {
-      const hash = await sha256(voteMarketAddress);
-      const voteMarket = await getOrSetVoteMarket(voteMarketAddress);
+      const voteMarket = await getOrSetVoteMarket(connection, voteMarketAddress);
+      setAddressIsValid(true);
       setCurrentVoteMarket(voteMarket);
-      setLastSelectedVoteMarketHash(hash);
+      setLastSelectedVoteMarketHash(voteMarket.hash);
     } else {
+      setAddressIsValid(false);
+      setCurrentVoteMarket(defaultVoteMarket);
       history.replace("/market/invalid");
     }
-  }, [basename, voteMarketAddress]);
+  }, [basename, voteMarketAddress, setAddressIsValid, setCurrentVoteMarket, setLastSelectedVoteMarketHash]);
 
   useEffect(() => {
-    if (voteMarketAddress && voteMarketAddress !== "" && basename === "market") {
+    if (publicKey && connected && currentVoteMarket) {
+      checkIsVoteParticipant();
+    }
+  }, [publicKey, connected, currentVoteMarket, extraPath]);
+
+  useEffect(() => {
+    if (basenameIsMarket && voteMarketAddressLengthGreaterThanZero) {
       checkVoteMarketAddress();
     }
   }, [basename, voteMarketAddress]);
 
   useEffect(() => {
-    if (currentVoteMarket && currentVoteMarket.address !== "" && publicKey && connected) {
-      checkIsVoteParticipant();
-    }
-  }, [currentVoteMarket, publicKey, connected]);
-
-  useEffect(() => {
-    if (disconnecting) {
+    if (disconnecting || !connected) {
       setIsVoteParticipant(false);
     }
-  }, [disconnecting, setIsVoteParticipant]);
-
-  useEffect(() => {
-    if (voteMarketAddress === "") {
-      setCurrentVoteMarket(undefined);
-    }
-  }, [voteMarketAddress, setCurrentVoteMarket]);
+  }, [disconnecting, connected, setIsVoteParticipant]);
 
   // receives address and not hash since consumed by client
   const handleSetLastSelectedVoteMarketHash = useCallback(
@@ -152,7 +209,7 @@ export const VoteMarketContextProvider: FC = ({ children }) => {
       const hash = await sha256(address);
       setLastSelectedVoteMarketHash(hash);
     },
-    [currentVoteMarket]
+    [setLastSelectedVoteMarketHash]
   );
 
   const handleSetMyPresentationText = useCallback(
@@ -161,12 +218,13 @@ export const VoteMarketContextProvider: FC = ({ children }) => {
         setMyPresentationText(event.target.value);
       }
     },
-    [currentVoteMarket, setMyPresentationText]
+    [setMyPresentationText]
   );
 
   return (
     <VoteMarketContext.Provider
       value={{
+        // mintKeypair,
         currentVoteMarket,
         lastSelectedVoteMarketHash,
         isVoteParticipant,

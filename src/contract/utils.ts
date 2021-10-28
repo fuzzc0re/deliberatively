@@ -1,4 +1,4 @@
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey, Signer, Keypair } from "@solana/web3.js";
 
 import { DELIBERATIVELY_PROGRAM_ID } from "./constants";
 
@@ -78,4 +78,22 @@ export const puffText = (text: string, FINAL_LEN: number): string => {
   } else {
     return text;
   }
+};
+
+export const convertKeyPairToBase64URL = (keypair: Signer): string => {
+  const secretKeyBuffer = Buffer.from(keypair.secretKey);
+  const secretKeyString = secretKeyBuffer.toString("base64");
+  const urlSafeSecretKeyString = secretKeyString.replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+
+  return urlSafeSecretKeyString;
+};
+
+export const convertBase64URLToKeypair = (secretKeyBufferString: string): Signer => {
+  let urlUnsafeSecretKeyBufferString = secretKeyBufferString.replaceAll("-", "+").replaceAll("_", "/");
+  while (urlUnsafeSecretKeyBufferString.length % 4) urlUnsafeSecretKeyBufferString += "=";
+  const secretKeyBuffer = Buffer.from(urlUnsafeSecretKeyBufferString, "base64");
+  const secretKey = new Uint8Array(secretKeyBuffer);
+  const keypair = Keypair.fromSecretKey(secretKey);
+
+  return keypair;
 };

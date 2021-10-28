@@ -1,4 +1,4 @@
-import { FC, useState, useMemo, useCallback } from "react";
+import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { CircularProgress } from "@mui/material";
@@ -9,9 +9,9 @@ import { initVoteMarket, InitVoteMarketArgs } from "../../contract/instructions/
 import { IVoteMarket, setVoteMarket } from "../../models/VoteMarket";
 import { sha256 } from "../../utils/db";
 
-import { useInitVoteMarketContext } from "../../hooks/useInitVoteMarketContext";
-
 import { StyledButton } from "../styled/Button";
+
+import { useVoteMarketFormContext } from "../../hooks/useVoteMarketFormContext";
 
 const StyledCircularProgress = styled(CircularProgress)(({ theme }) => ({
   color: theme.palette.primary.main,
@@ -21,50 +21,37 @@ export const MintTokenButton: FC = () => {
   const {
     identifierText,
     keyword,
+    numberOfDays,
+    numberOfParticipants,
+    maximumNumberOfRepresentatives,
+    minimumContributionRequiredFromParticipant,
+    participantPresentationText,
+  } = useVoteMarketFormContext();
+
+  const { connection } = useConnection();
+  const { connected, wallet, publicKey, sendTransaction } = useWallet();
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const history = useHistory();
+
+  const args: InitVoteMarketArgs = {
+    identifierText,
+    keyword,
     numberOfParticipants,
     // rebalancingCost,
     numberOfDays,
     maximumNumberOfRepresentatives,
     minimumContributionRequiredFromParticipant,
     participantPresentationText,
-  } = useInitVoteMarketContext();
-  const { connection } = useConnection();
-  const { connected, wallet, publicKey, sendTransaction } = useWallet();
-  const [buttonDisabled, setButtonDisabled] = useState(false);
-  const history = useHistory();
+  };
 
-  const args: InitVoteMarketArgs = useMemo(
-    () => ({
-      identifierText,
-      keyword,
-      numberOfParticipants,
-      // rebalancingCost,
-      numberOfDays,
-      maximumNumberOfRepresentatives,
-      minimumContributionRequiredFromParticipant,
-      participantPresentationText,
-    }),
-    [
-      identifierText,
-      keyword,
-      numberOfParticipants,
-      // rebalancingCost,
-      numberOfDays,
-      maximumNumberOfRepresentatives,
-      minimumContributionRequiredFromParticipant,
-      participantPresentationText,
-    ]
-  );
-
-  const handleClick = useCallback(async () => {
+  const handleClick = async () => {
     setButtonDisabled(true);
-    if (!connected || !wallet || !publicKey) {
-      console.log("No wallet found");
-      setButtonDisabled(false);
-      return;
-    }
-
     try {
+      if (!connected || !wallet || !publicKey) {
+        setButtonDisabled(false);
+        throw new Error("Your wallet is not connected!");
+      }
+
       const { mintAccountPublicKey, initializerTokenAccountPublicKey, pda } = await initVoteMarket(
         connection,
         publicKey,
@@ -77,8 +64,9 @@ export const MintTokenButton: FC = () => {
 
       // if this succeeds then
       const newVoteMarket: IVoteMarket = {
-        address: mintAccountPublicKey.toString(),
         hash,
+        address: mintAccountPublicKey.toString(),
+        identifierText,
         numberOfParticipants,
         minimumContributionRequiredFromParticipant,
         maxRepresentatives: maximumNumberOfRepresentatives,
@@ -96,7 +84,7 @@ export const MintTokenButton: FC = () => {
       setButtonDisabled(false);
       console.log(error);
     }
-  }, [connected, wallet, publicKey]);
+  };
 
   return (
     <StyledButton disabled={buttonDisabled} disableRipple onClick={handleClick}>

@@ -8,8 +8,8 @@ use crate::{
     utils::{
         assert_account_is_empty, assert_account_is_owned_by, assert_account_is_rent_exempt,
         assert_account_is_signer, assert_account_is_token_program,
-        assert_is_valid_address_with_seed, assert_is_valid_pda, assert_pda_is_mint_authority,
-        get_mint_derived_program_address,
+        assert_is_valid_address_with_seed, assert_is_valid_pda,
+        assert_pda_is_mint_and_freeze_authority, get_mint_derived_program_address,
     },
     DELIBERATIVELY_SEED,
 };
@@ -56,7 +56,7 @@ fn parse_accounts<'a, 'b: 'a>(
     assert_account_is_owned_by(accounts.mint, &spl_token::id())?;
     let pda = get_mint_derived_program_address(program_id, accounts.mint.key);
     assert_is_valid_pda(accounts.pda, &pda)?;
-    assert_pda_is_mint_authority(&pda, accounts.mint)?;
+    assert_pda_is_mint_and_freeze_authority(&pda, accounts.mint)?;
     assert_is_valid_address_with_seed(
         accounts.program_mint_derived,
         program_id,

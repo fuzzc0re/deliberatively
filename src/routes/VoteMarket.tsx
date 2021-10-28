@@ -2,27 +2,13 @@ import { FC, useState, useEffect, useCallback } from "react";
 import { Grid, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { PublicKey } from "@solana/web3.js";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useConnection } from "@solana/wallet-adapter-react";
 
 import { useVoteMarketContext } from "../hooks/useVoteMarketContext";
 
+import { StyledTextField } from "../components/styled/TextField";
 import { GoToProposeAlternativeButton } from "../components/buttons/GoToProposeAlternative";
 import { GoToParticipateButton } from "../components/buttons/GoToParticipate";
-
-import { StyledTextField } from "../components/styled/TextField";
-
-// import { GoToParticipateButton } from "../components/buttons/GoToParticipate";
-// import { GoToContributeButton } from "../components/buttons/GoToContribute";
-
-// import { copyrightHeight, toolbarHeight } from "../utils/constants";
-
-// import { isParticipatingVoterValidator } from "../utils/validators";
-
-// const voter = isParticipatingVoterValidator();
-// if (voter) {
-//   setIsVoter(true);
-//   setBalance(voter.balance);
-// }
 
 const StyledGrid = styled(Grid)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -39,50 +25,48 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 }));
 
 const VoteMarket: FC = () => {
-  const [balance, setBalance] = useState(0);
   const { currentVoteMarket, myPresentationText, setMyPresentationText, isVoteParticipant } = useVoteMarketContext();
   const { connection } = useConnection();
-  const { publicKey, connected } = useWallet();
+  const [balance, setBalance] = useState(0);
 
-  const getTokenBalance = useCallback(async () => {
-    if (currentVoteMarket && currentVoteMarket.ownTokenAddress && publicKey) {
-      try {
-        const ownPublicKey = new PublicKey(currentVoteMarket.ownTokenAddress);
-        const tokenAccountBalance = await connection.getTokenAccountBalance(ownPublicKey);
-        if (tokenAccountBalance.value.uiAmount) {
-          setBalance(tokenAccountBalance.value.uiAmount);
-        }
-      } catch (error) {
-        console.log(error);
+  const checkBalance = useCallback(async () => {
+    if (currentVoteMarket && currentVoteMarket.ownTokenAddress && isVoteParticipant) {
+      const ownPublicKey = new PublicKey(currentVoteMarket.ownTokenAddress);
+      const tokenAccountBalance = await connection.getTokenAccountBalance(ownPublicKey);
+      if (tokenAccountBalance.value.uiAmount) {
+        setBalance(tokenAccountBalance.value.uiAmount);
       }
     }
-  }, [currentVoteMarket, connection, publicKey]);
+  }, [currentVoteMarket, isVoteParticipant, setBalance]);
 
   useEffect(() => {
-    if (isVoteParticipant) {
-      setTimeout(() => {
-        getTokenBalance();
-      }, 200);
-    }
-  }, [currentVoteMarket, isVoteParticipant, publicKey, connection]);
-
-  useEffect(() => {
-    if (!connected || !publicKey) {
-      setBalance(0);
-    }
-  }, [currentVoteMarket, publicKey, connected]);
+    checkBalance();
+  }, [currentVoteMarket, isVoteParticipant, setBalance]);
 
   return (
     <StyledGrid
       container
-      rowSpacing={{ xs: 1, sm: 3, md: 3 }}
+      rowSpacing={{ xs: 1, sm: 2, md: 2 }}
       columnSpacing={{ xs: 1, sm: 2, md: 2 }}
       columns={{ xs: 1, sm: 12, md: 12 }}
       direction={{ xs: "column", sm: "row" }}
     >
       <StyledGrid item xs={1} sm={12} md={12}>
-        <StyledTypography paragraph>Vote market: {currentVoteMarket?.address}</StyledTypography>
+        <StyledTypography>Vote market: {currentVoteMarket?.address}</StyledTypography>
+        <StyledTypography>Title: {currentVoteMarket?.identifierText}</StyledTypography>
+        <StyledTypography>
+          Share the url with anyone who you think should participate in this vote market.
+        </StyledTypography>
       </StyledGrid>
+
+      {!isVoteParticipant && (
+        <StyledGrid item xs={1} sm={12} md={12}>
+          <StyledTypography>
+            If you want to participate then you need to provide the vote market keyword and a text presenting yourself
+            to the other market participants.
+          </StyledTypography>
+        </StyledGrid>
+      )}
 
       {isVoteParticipant && (
         <StyledGrid item xs={1} sm={12} md={12}>

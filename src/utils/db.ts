@@ -87,6 +87,16 @@ export const setItem = async (
   await store.add(value);
 };
 
+export const updateItem = async (
+  tableName: "voteMarkets" | "voteParticipants" | "voteAlternatives",
+  value: IVoteMarket | IVoteParticipant | IVoteAlternative
+): Promise<void> => {
+  const db = await getDB();
+  const tx = db.transaction(tableName, "readwrite");
+  const store = tx.objectStore(tableName);
+  await store.put(value);
+};
+
 export const removeItem = async (
   tableName: "voteMarkets" | "voteParticipants" | "voteAlternatives",
   hash: string

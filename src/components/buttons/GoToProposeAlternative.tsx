@@ -7,10 +7,10 @@ import { StyledButton } from "../styled/Button";
 
 export const GoToProposeAlternativeButton: FC = () => {
   const history = useHistory();
-  const { currentVoteMarket } = useVoteMarketContext();
+  const { currentVoteMarket, isVoteParticipant } = useVoteMarketContext();
 
   const handleClick = () => {
-    if (currentVoteMarket) {
+    if (currentVoteMarket && isVoteParticipant) {
       history.push(`/market/${currentVoteMarket.address}/propose`);
     }
   };

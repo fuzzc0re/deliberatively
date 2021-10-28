@@ -1,6 +1,8 @@
-import { FC, useState } from "react";
+import { FC } from "react";
 import { Grid, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
+
+import { VoteMarketFormContextProvider } from "../context/VoteMarketForm";
 
 import { TextFieldMarketIdentifierText } from "../components/textfields/MarketIdentifierText";
 import { TextFieldKeyword } from "../components/textfields/Keyword";
@@ -14,10 +16,8 @@ import { MintTokenButton } from "../components/buttons/Mint";
 
 // import { copyrightHeight, toolbarHeight } from "../utils/constants";
 
-import { InitVoteMarketContextProvider } from "../context/InitVoteMarket";
-
 const StyledGrid = styled(Grid)(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(2.5),
 }));
 
 const StyledGridItem = styled(Grid)(() => ({
@@ -26,18 +26,16 @@ const StyledGridItem = styled(Grid)(() => ({
 }));
 
 const Mint: FC = () => {
-  const [canInitializeMint, setCanInitializeMint] = useState(false);
-
   return (
-    <InitVoteMarketContextProvider>
+    <VoteMarketFormContextProvider>
       <StyledGrid
         container
         rowSpacing={{ xs: 5, sm: 7 }}
-        columnSpacing={{ sm: 9 }}
-        columns={{ xs: 1, sm: 9, md: 9 }}
+        columnSpacing={{ sm: 6 }}
+        columns={{ xs: 1, sm: 8, md: 9 }}
         direction={{ xs: "column", sm: "row" }}
       >
-        <StyledGrid item xs={1} sm={9} md={9}>
+        <StyledGrid item xs={1} sm={8} md={9}>
           <Typography paragraph>
             For now the associated contract runs on the Solana Devnet so make sure to configure your wallet's network
             accordingly. An airdrop button for 1 SOL on the devnet has been provided for you to test the website.
@@ -48,36 +46,36 @@ const Mint: FC = () => {
           </Typography>
         </StyledGrid>
 
-        <StyledGridItem item xs={1} sm={3} md={3}>
+        <StyledGridItem item xs={1} sm={4} md={3}>
           <TextFieldMarketIdentifierText />
         </StyledGridItem>
 
-        <StyledGridItem item xs={1} sm={3} md={3}>
+        <StyledGridItem item xs={1} sm={4} md={3}>
           <TextFieldKeyword />
         </StyledGridItem>
 
-        <StyledGridItem item xs={1} sm={3} md={3}>
+        <StyledGridItem item xs={1} sm={4} md={3}>
           <TextFieldParticipantPresentationText optional />
         </StyledGridItem>
 
-        <StyledGridItem item xs={1} sm={3} md={3}>
+        <StyledGridItem item xs={1} sm={4} md={3}>
           <TextFieldParticipants />
         </StyledGridItem>
 
-        <StyledGridItem item xs={1} sm={3} md={3}>
+        <StyledGridItem item xs={1} sm={4} md={3}>
           <TextFieldNumberOfDays />
         </StyledGridItem>
 
-        <StyledGridItem item xs={1} sm={3} md={3}>
+        <StyledGridItem item xs={1} sm={4} md={3}>
           <TextFieldMaximumNumberOfRepresentatives />
         </StyledGridItem>
 
-        <StyledGridItem item xs={1} sm={9} md={9}>
+        <StyledGridItem item xs={1} sm={8} md={9}>
           <MintTokenButton />
           <AirdropButton />
         </StyledGridItem>
       </StyledGrid>
-    </InitVoteMarketContextProvider>
+    </VoteMarketFormContextProvider>
   );
 };
 

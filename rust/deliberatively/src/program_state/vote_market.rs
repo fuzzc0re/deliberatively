@@ -128,8 +128,14 @@ impl VoteMarket {
         }
     }
 
-    pub fn provided_keyword_matches(&self, keyword: &str) -> ProgramResult {
-        if *keyword != self.keyword {
+    pub fn provided_keyword_matches(&self, keyword: String) -> ProgramResult {
+        let mut array_of_spaces = vec![];
+        while array_of_spaces.len() < MAX_KEYWORD_LEN - keyword.len() {
+            array_of_spaces.push(32);
+        }
+
+        let padded_keyword = keyword + std::str::from_utf8(&array_of_spaces).unwrap();
+        if padded_keyword != self.keyword {
             Err(VoteError::KeywordsDoNotMatch.into())
         } else {
             Ok(())   

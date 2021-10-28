@@ -30,7 +30,7 @@ const ProposeAlternative: FC = () => {
     if (!connected || !isVoteParticipant) {
       history.replace(`/market/${currentVoteMarket?.address}`);
     }
-  }, [currentVoteMarket, connected, isVoteParticipant]);
+  }, [connected, isVoteParticipant, currentVoteMarket]);
 
   return (
     <StyledGrid

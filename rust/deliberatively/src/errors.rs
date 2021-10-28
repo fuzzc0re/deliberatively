@@ -24,8 +24,8 @@ pub enum VoteError {
     AccountIsNotAssociatedTokenAccountProgram,
     #[error("Invalid program derived address")]
     InvalidProgramDerivedAddress,
-    #[error("Program is not mint authority")]
-    ProgramIsNotMintAuthority,
+    #[error("Program is not mint and freeze authority")]
+    ProgramIsNotMintAndFreezeAuthority,
     #[error("Vote identifier text is too large")]
     LargeIdentifierText,
     #[error("Vote keyword text is too large")]

@@ -12,7 +12,12 @@ import {
   SOLANA_SCHEMA,
 } from "@solana/web3.js";
 
-import { getContractPDA, getAccountPDA, puffText } from "../utils";
+import {
+  getContractPDA,
+  getAccountPDA,
+  puffText,
+  // convertKeyPairToBase64URL
+} from "../utils";
 
 import {
   DELIBERATIVELY_PROGRAM_ID,
@@ -162,6 +167,7 @@ export const initVoteMarketMintTransactions = async (
       [Buffer.from("deliberatively", "utf8"), mintAccount.publicKey.toBuffer()],
       DELIBERATIVELY_PROGRAM_ID
     );
+
     // PDA becomes mint authority.
     transaction.add(
       Token.createInitMintInstruction(
@@ -218,16 +224,23 @@ export const initVoteMarket = async (
     pda,
   } = await initVoteMarketMintTransactions(connection, publicKey);
 
-  const sanitizedIdentifierText = puffText(args.identifierText, MAX_IDENTIFIER_TEXT_LEN);
-  const sanitizedKeyword = puffText(args.keyword, MAX_KEYWORD_LEN);
+  const sanitizedIdentifierText = puffText(
+    args.identifierText !== "" ? args.identifierText : "Hello, this is a Deliberatively vote market!",
+    MAX_IDENTIFIER_TEXT_LEN
+  );
+
+  if (args.keyword.length < 8 || args.keyword.length > MAX_KEYWORD_LEN) {
+    throw new Error("Market keyword is either too small or too large.");
+  }
+
   const sanitizerParticipantPresentationText = puffText(
-    "Some participant presentation text",
+    args.participantPresentationText !== "" ? args.participantPresentationText : "Hello, I am using Deliberatively!",
     MAX_PRESENTATION_TEXT_LEN
   );
 
   const newVoteMarketInstructionData = new InitVoteMarketInstructionData({
     identifierText: sanitizedIdentifierText,
-    keyword: sanitizedKeyword,
+    keyword: args.keyword,
     numberOfParticipants: args.numberOfParticipants,
     // rebalancingCost: args.rebalancingCost,
     maximumNumberOfRepresentatives: args.maximumNumberOfRepresentatives,
@@ -262,9 +275,12 @@ export const initVoteMarket = async (
   const instructionTransactionSignature = await sendTransaction(transaction, connection);
   await connection.confirmTransaction(instructionTransactionSignature, "processed");
 
+  // const url = convertKeyPairToBase64URL(mintAccount);
+  // const urlKeypair = convertBase64URLToKeypair(url);
+
   return {
     mintAccountPublicKey: mintAccount.publicKey,
     initializerTokenAccountPublicKey: initializerTokenAccount.publicKey,
-    pda: pda,
+    pda,
   };
 };

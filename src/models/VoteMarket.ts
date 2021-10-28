@@ -1,13 +1,21 @@
+import { Connection, PublicKey } from "@solana/web3.js";
+
 import { IBase } from "./Base";
 import { IVoteParticipant, getAllVoteParticipants, deleteVoteParticipant } from "./VoteParticipant";
 import { IVoteAlternative, getAllVoteAlternatives, deleteVoteAlternative } from "./VoteAlternative";
 
-import { sha256, getItem, setItem, getAllItems, removeItem } from "../utils/db";
-import { PublicKey } from "@solana/web3.js";
+import { sha256, getItem, getAllItems, setItem, updateItem, removeItem } from "../utils/db";
+
+import {
+  // convertBase64URLToKeypair,
+  getContractPDA,
+} from "../contract/utils";
+import { decodeVoteMarketState } from "../contract/state/VoteMarket";
 
 export interface IVoteMarket extends IBase {
   // token mint Pubkey
   address: string;
+  identifierText: string;
   numberOfParticipants: number;
   // rebalancingCost: number;
   maxRepresentatives: number;
@@ -17,7 +25,7 @@ export interface IVoteMarket extends IBase {
   stopDate: number;
   minimumContributionRequiredFromParticipant: number;
   pda: string;
-  ownTokenAddress: string;
+  ownTokenAddress?: string;
   participants: IVoteParticipant[];
   alternatives: IVoteAlternative[];
 }
@@ -51,22 +59,26 @@ export const setVoteMarket = async (voteMarket: IVoteMarket): Promise<void> => {
   }
 };
 
-export const getOrSetVoteMarket = async (address: string): Promise<IVoteMarket> => {
+export const getOrSetVoteMarket = async (connection: Connection, address: string): Promise<IVoteMarket> => {
   try {
     const hash = await sha256(address);
     const existingVoteMarket = await getVoteMarket(hash);
     if (!existingVoteMarket) {
+      // const mintKeypair = convertBase64URLToKeypair(address);
+      const mintAccountPublicKey = new PublicKey(address);
+      const pda = await getContractPDA(mintAccountPublicKey);
+      const voteMarketState = await decodeVoteMarketState(connection, pda);
       const newVoteMarket: IVoteMarket = {
         hash,
         address,
-        numberOfParticipants: 10,
+        identifierText: voteMarketState.identifierText,
+        numberOfParticipants: voteMarketState.numberOfParticipants,
         // rebalancingCost: 0.01,
-        maxRepresentatives: 3,
-        minimumContributionRequiredFromParticipant: 1,
-        startDate: Date.now(),
-        stopDate: Date.now() + 1000 * 60 * 60 * 30,
-        ownTokenAddress: new PublicKey("").toString(),
-        pda: new PublicKey("").toString(),
+        maxRepresentatives: voteMarketState.maximumNumberOfRepresentatives,
+        minimumContributionRequiredFromParticipant: voteMarketState.minimumContributionRequiredFromParticipant,
+        startDate: voteMarketState.startUnixTimestamp,
+        stopDate: voteMarketState.stopUnixTimestamp,
+        pda: pda.toString(),
         participants: [],
         alternatives: [],
       };
@@ -78,6 +90,14 @@ export const getOrSetVoteMarket = async (address: string): Promise<IVoteMarket> 
   } catch (error) {
     console.log(error);
     throw error;
+  }
+};
+
+export const updateVoteMarket = async (voteMarket: IVoteMarket): Promise<void> => {
+  try {
+    await updateItem("voteMarkets", voteMarket);
+  } catch (error) {
+    console.log(error);
   }
 };
 

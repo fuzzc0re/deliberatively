@@ -7,8 +7,8 @@ use crate::{
     utils::{
         assert_account_is_empty, assert_account_is_owned_by, assert_account_is_rent_exempt,
         assert_account_is_signer, assert_account_is_token_program,
-        assert_is_valid_address_with_seed, assert_is_valid_pda, assert_pda_is_mint_authority,
-        get_mint_derived_program_address,
+        assert_is_valid_address_with_seed, assert_is_valid_pda,
+        assert_pda_is_mint_and_freeze_authority, get_mint_derived_program_address,
     },
     DELIBERATIVELY_SEED,
 };
@@ -55,14 +55,13 @@ fn parse_accounts<'a, 'b: 'a>(
     assert_account_is_owned_by(accounts.mint, &spl_token::id())?;
     let pda = get_mint_derived_program_address(program_id, accounts.mint.key);
     assert_is_valid_pda(accounts.pda, &pda)?;
-    assert_pda_is_mint_authority(&pda, accounts.mint)?;
+    assert_pda_is_mint_and_freeze_authority(&pda, accounts.mint)?;
     assert_is_valid_address_with_seed(
         accounts.program_mint_derived,
         program_id,
         DELIBERATIVELY_SEED,
         accounts.mint.key,
     )?;
-    assert_account_is_empty(accounts.program_mint_derived)?;
     assert_account_is_owned_by(accounts.program_mint_derived, &program_id)?;
     assert_account_is_empty(accounts.participant_mint_derived)?;
     assert_account_is_owned_by(accounts.participant_mint_derived, &program_id)?;
@@ -107,7 +106,27 @@ pub fn process_participate_vote_market(
     let mut vote_market_data = VoteMarket::from_account_info(accounts.program_mint_derived)?;
     vote_market_data.can_mint_one_token()?;
     vote_market_data.there_is_still_time()?;
-    vote_market_data.provided_keyword_matches(&args.keyword)?;
+    vote_market_data.provided_keyword_matches(args.keyword)?;
+
+    // Initialize mint related account for initializer
+    // let initializer_initializer_mint_account = spl_token::instruction::initialize_account(
+    //     accounts.token_program.key,
+    //     accounts.initializer_token_account.key,
+    //     accounts.mint.key,
+    //     accounts.token_program.key,
+    // )?;
+    //
+    // invoke(
+    //     &initializer_initializer_mint_account,
+    //     &[
+    //         accounts.token_program.clone(),
+    //         accounts.initializer.clone(),
+    //         accounts.initializer_token_account.clone(),
+    //         accounts.mint.clone(),
+    //         accounts.rent.clone(),
+    //     ],
+    // )?;
+    //
 
     let seeds = &[b"deliberatively", accounts.mint.key.as_ref()];
     let (_pda, bump_seed) = Pubkey::find_program_address(seeds, program_id);

@@ -6,7 +6,12 @@ import { useWallet } from "@solana/wallet-adapter-react";
 
 import { useVoteMarketContext } from "../hooks/useVoteMarketContext";
 
+import { VoteMarketFormContextProvider } from "../context/VoteMarketForm";
+
+import { TextFieldParticipantPresentationText } from "../components/textfields/ParticipantPresentationText";
+import { TextFieldKeyword } from "../components/textfields/Keyword";
 import { ParticipateButton } from "../components/buttons/Participate";
+import { AirdropButton } from "../components/buttons/Airdrop";
 
 const StyledGrid = styled(Grid)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -23,37 +28,44 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 }));
 
 const Participate: FC = () => {
-  // const [isVoter, setIsVoter] = useState(false);
-  // const [balance, setBalance] = useState(0);
-
   const history = useHistory();
   const { currentVoteMarket, isVoteParticipant } = useVoteMarketContext();
   const { connected } = useWallet();
-  // const { connection } = useConnection();
-  // const history = useHistory();
-  //
+
   useEffect(() => {
-    if (connected && isVoteParticipant && currentVoteMarket) {
-      history.replace(`/market/${currentVoteMarket.address}`);
+    if (connected && isVoteParticipant) {
+      history.replace(`/market/${currentVoteMarket?.address}`);
     }
-  }, [currentVoteMarket, isVoteParticipant, connected]);
+  }, [connected, isVoteParticipant, currentVoteMarket]);
 
   return (
-    <StyledGrid
-      container
-      rowSpacing={{ xs: 1, sm: 3, md: 3 }}
-      columnSpacing={{ xs: 1, sm: 2, md: 2 }}
-      columns={{ xs: 1, sm: 12, md: 12 }}
-      direction={{ xs: "column", sm: "row" }}
-    >
-      <StyledGrid item xs={1} sm={12} md={12}>
-        <StyledTypography paragraph>Participate in {currentVoteMarket?.address}</StyledTypography>
-      </StyledGrid>
+    <VoteMarketFormContextProvider>
+      <StyledGrid
+        container
+        rowSpacing={{ xs: 1, sm: 2, md: 2 }}
+        columnSpacing={{ xs: 1, sm: 2, md: 2 }}
+        columns={{ xs: 1, sm: 12, md: 12 }}
+        direction={{ xs: "column", sm: "row" }}
+      >
+        <StyledGrid item xs={1} sm={12} md={12}>
+          <StyledTypography>Vote market: {currentVoteMarket?.address}</StyledTypography>
+          <StyledTypography>Title: {currentVoteMarket?.identifierText}</StyledTypography>
+        </StyledGrid>
 
-      <StyledGrid item xs={1} sm={12} md={12}>
-        <ParticipateButton />
+        <StyledGrid item xs={1} sm={4} md={4}>
+          <TextFieldParticipantPresentationText optional={false} />
+        </StyledGrid>
+
+        <StyledGrid item xs={1} sm={4} md={4}>
+          <TextFieldKeyword />
+        </StyledGrid>
+
+        <StyledGrid item xs={1} sm={12} md={12}>
+          <ParticipateButton />
+          <AirdropButton />
+        </StyledGrid>
       </StyledGrid>
-    </StyledGrid>
+    </VoteMarketFormContextProvider>
   );
 };
 
