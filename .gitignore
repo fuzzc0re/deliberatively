@@ -13,3 +13,4 @@ target
 example.sqlite
 .size-snapshot.json
 test-ledger
+test-validator

@@ -26,7 +26,7 @@ pub enum VoteMarketInstruction {
     /// Potential participant provides keyword and presentation text for other participants to see.
     ///
     ///   0. `[signer]` The potential participant account.
-    ///   1. `[]` Token mint account.
+    ///   1. `[writable]` Token mint account.
     ///   2. `[writable]` Program mint derived address account to store updated vote market state.
     ///   3. `[writable]` Initializer mint derived token address account to store participation data.
     ///   4. `[]` Initializer token account to mint_to 1 vote market token.
@@ -82,7 +82,7 @@ pub fn participate_vote_market_instruction(
         program_id,
         accounts: vec![
             AccountMeta::new_readonly(initializer_account, true),
-            AccountMeta::new_readonly(mint_account, false),
+            AccountMeta::new(mint_account, false),
             AccountMeta::new(program_mint_derived_account, false),
             AccountMeta::new(initializer_mint_derived_account, false),
             AccountMeta::new_readonly(initializer_token_account, false),

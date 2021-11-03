@@ -1,7 +1,6 @@
 import { FC } from "react";
 import { Grid, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { useConnection } from "@solana/wallet-adapter-react";
 
 import { useVoteMarketContext } from "../hooks/useVoteMarketContext";
 
@@ -26,7 +25,6 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 const VoteMarket: FC = () => {
   const { currentVoteMarket, balance, isVoteParticipant, myPresentationText, setMyPresentationText } =
     useVoteMarketContext();
-  const { connection } = useConnection();
 
   return (
     <StyledGrid
